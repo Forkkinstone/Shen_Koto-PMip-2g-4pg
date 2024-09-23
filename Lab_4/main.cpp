@@ -3,7 +3,7 @@ using namespace std; // Позволяет не писать std::
 int main() // VAR 10
 {
 // 4.1
-   cout << "Enter a natural number" << endl; // Выводит в консоль надпись перед вводом чисел
+   cout << "Enter a natural number: " << endl; // Выводит в консоль надпись перед вводом чисел
    int a, b, c; // Объявление переменных с типом int
    cin >> a >> b >> c; // Считывание значений
 
