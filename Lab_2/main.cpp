@@ -1,7 +1,7 @@
 #include <iostream> // Модуль ввода-вывода
 #include <cmath> // Библиотека матопераций 
 using namespace std; // Позволяет не писать std::
-int main()
+int main() // V10
 {
     float x, n; // Объявляем переменные с типом float (тип с плавающей точкой)
     cout << "Enter the first number -- "; // Выводим в консоль "Введите первое число -- "
@@ -21,7 +21,8 @@ int main()
         cout << "You have entered a value that exceeds the allowed values."; // Если второе значение не удовлетворяет условию, выводится текст с ошибкой
     }
     }
-    else {
+    else 
+    {
         cout << "You have entered a value that exceeds the allowed values."; // Если первое значение не удовлетворяет условию, выводится текст с ошибкой
     }
 

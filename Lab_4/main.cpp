@@ -31,7 +31,7 @@ int main() // VAR 10
 
 
 // 4.2
-// cout << "Enter the product code" << "\n"; // Выводится строка с просьбой ввести код
+// cout << "Enter the product code: " << "\n"; // Выводится строка с просьбой ввести код
 //   short codeProduct; // объявляется переменная с типом short, т.к. больших, чем четырехзначных значений нам не требуется
 //   char count = 0; // объявляется переменная - счётчик (нужен для цикла while)
 
@@ -83,7 +83,7 @@ int main() // VAR 10
 
 
 // 4.3
-// short num; 
+//     short num; 
 //     printf("Enter a value: ");
 //     cin >> num;
 
