@@ -1,19 +1,16 @@
 #include <iostream>
-using namespace std;
 int main() 
 
 {
-    short num;
-    cin >> num;
-    
-    if (num<=10000)
-    {
-        cout << num % 10 << "\n";
-    }
-    else
-    {
-        cout << "You entered an incorrect value" << "\n";
-    }
 
+    int N,b,c;
+    std::cin >> N;
+    c=N%100;
+    b=c/10;
+    std::cout << b;
     return 0;
+
+
+
+
 }
