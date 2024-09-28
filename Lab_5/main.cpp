@@ -4,8 +4,9 @@ int main ()
     int N;
     int i;
     int sum = 0;
-    std::cin >> N;
-    for (i=1; i<=N; i++) 
+    const int i_min;
+    std::cin >> N >> i_min;
+    for (i=i_min; i<=N; i++) 
     if (i%10!=1)
     {
         sum += i;
