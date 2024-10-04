@@ -1,45 +1,45 @@
 #include <iostream>
 int main ()
 {
-    // int N;
-    // int i;
-    // int sum = 0;
-    // int i_min;
-    // std::cin >> N >> i_min;
+    int N;
+    int i;
+    int sum = 0;
+    int i_min; // Определяется, с какого минимального значения цик будет пробегаться до числа N
+    std::cin >> N >> i_min;
 
-    // for (i=i_min; i<=N; i++) 
+    for (i=i_min; i<=N; i++) // Проходимся по циклу при условии, что i%10!=1 прибавляем к сумме элемент
     
-    //     if (i%10!=1)
-    //     {
-    //         sum += i;
-    //     }
+        if (i%10!=1) 
+        {
+            sum += i;
+        }
 
-    // std::cout << "sum: " << sum << std::endl;
+    std::cout << "sum: " << sum << std::endl; // Считается и выводится сумма элементов, не оканчивающихся на 1.
 
-    // for (i=i_min; i<=N; i++) 
+    for (i=i_min; i<=N; i++) 
 
-    //     if (i%10==1)
-    //     {
-    //         std::cout << "min_1: " << i << std::endl;
-    //         std::cout << "num_1: " << i-i_min + 1 << std::endl;
-    //         break;
-    //     }
+        if (i%10==1) // Проходимся по циклу при альтернативном условии
+        {
+            std::cout << "min_1: " << i << std::endl; // Выводится первое попавшееся число, оканчивающееся на 1
+            std::cout << "num_1: " << i-i_min + 1 << std::endl; // Простой алгоритм для подсчёта и вывода номера элемента. 
+            break;
+        }
     
-    // return 0;
+    return 0;
 
     int N;
     std::cout << "Enter a number: " << std::endl;
     std::cin >> N; 
-    int mina = INT_MAX;
+    int mina = INT_MAX; // Большое число
 
     while (N > 0)
     {
-        int a = N%10;
-        if (a<mina)
+        int a = N%10; // Отщипляем от числа последнюю цифру и рассматриваем её
+        if (a<mina) // Если эта цифра меньше значения то в if присваиваем значение "а" значению "mina" 
         {
             mina = a;
         }
-        N /= 10;
+        N /= 10; // Убираем последнюю цифру числа для работы цикла
     }
     std::cout << "The minimum figure is: " << mina << std::endl;
 
