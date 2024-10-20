@@ -56,6 +56,9 @@ int main ()
         std::cout << mas[i] << "  ";
 
 
+    return 0;
+
+
 
 
 
@@ -134,14 +137,12 @@ int main ()
                         mas[i] = mas[j];
                         mas[j] = tmp;
                     }
-                    else if((multiply_I == multiply_J) && (sum_I == sum_J))
+                    else if((multiply_I == multiply_J) && (sum_I == sum_J) && (mas[i] > mas[j]))
                     {   //Сортировка по самому числу
-                        if(mas[i]>mas[j])
-                        {
                         int tmp = mas[i];
                         mas[i] = mas[j];
                         mas[j] = tmp;
-                        }
+                        
                     }
 
 
@@ -160,6 +161,11 @@ int main ()
 
 
     return 0;
+
+
+
+    //3 
+
 
 
 
