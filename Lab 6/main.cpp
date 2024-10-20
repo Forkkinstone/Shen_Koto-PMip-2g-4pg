@@ -68,10 +68,10 @@ int main ()
         std::cin >> mas[i];
 
 
-
+    // Сотировка
     for(int i=0; i<n-1;i++)
         for(int j=i+1; j<n; j++)
-            {
+            {   // Сортировка по произведению цифр числа
                 int value_I = mas[i];
                 int multiply_I = 0;
 
@@ -82,7 +82,7 @@ int main ()
                         multiply_I *= value_I;
                     }
                 
-                int value_J = mas[i];
+                int value_J = mas[j];
                 int multiply_J = 0;
 
                 while(value_J > 0)
@@ -91,6 +91,8 @@ int main ()
                         value_J /= 10;
                         multiply_J *= value_J;
                     }
+                
+
 
                 if(multiply_I > multiply_J)
                 {
@@ -98,6 +100,49 @@ int main ()
                 mas[i] = mas[j];
                 mas[j] = tmp;
                 }
+                else if(multiply_I == multiply_J)
+                {   //Сортировка по сумме цифр числа
+                    value_I = mas[i];
+                    int sum_I = 0;
+
+                    while(value_I > 0)
+                    {
+                        int num_I = value_I % 10;
+                        value_I /= 10;
+                        sum_I += value_I;
+                    }
+
+                    value_J = mas[j];
+                    int sum_J = 0;
+
+                    while(value_J > 0)
+                    {
+                        int num_J = value_J % 10;
+                        value_J /= 10;
+                        sum_J += value_J;
+                    }
+
+                    if(sum_I > sum_J)
+                    {
+                        int tmp = mas[i];
+                        mas[i] = mas[j];
+                        mas[j] = tmp;
+                    }
+                    else if((multiply_I == multiply_J) && (sum_I == sum_J))
+                    {   //Сортировка по самому числу
+                        if(mas[i]>mas[j])
+                        {
+                        int tmp = mas[i];
+                        mas[i] = mas[j];
+                        mas[j] = tmp;
+                        }
+                    }
+
+
+
+                }
+                
+
             }
 
     
