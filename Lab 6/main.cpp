@@ -53,7 +53,7 @@ int main ()
 
     //Вывод
     for(int i=0; i<n; i++)
-        std::cout << mas[i] << " ";
+        std::cout << mas[i] << "  ";
 
 
 
@@ -63,13 +63,12 @@ int main ()
 
 
     //2
-
     const int N_Max = 10000;
     int mas[N_Max];
 
     int n;
     std::cin >> n;
-    
+
     // Ввод
     for(int i=0; i<n; i++)
         std::cin >> mas[i];
@@ -160,11 +159,6 @@ int main ()
         std::cout << mas[i] << " ";
 
 
-
-
-    
-
-        
     return 0;
 
 
