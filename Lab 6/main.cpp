@@ -164,7 +164,63 @@ int main ()
 
 
 
-    //3 
+    //4 
+    const int N_Max = 20000;
+    int mas[N_Max];
+    int n;
+    std::cin >> n;
+
+    //Ввод
+    for(int i=0; i<n; i++)
+        std::cin >> mas[i];
+
+    //Удаление
+    for(int i=0; i<n; i++)
+    {
+        int value_I = mas[i];
+        int multiply_I = 0;
+
+        while(value_I > 0)
+            {
+                int num_I = value_I % 10;
+                value_I /= 10;
+                multiply_I *= value_I;
+            }
+        if (multiply_I == 70)
+        {
+            for(int j=i; j<n-1; j++)
+                mas[j] = mas[j+1];
+            i--;
+            n--;
+        }
+    }
+
+    //Дублирование
+    for(int i=0; i<n; i++)
+    {
+        int value_I = mas[i];
+        bool IsPime = false;
+
+        for(int i=2; i*i <= mas[i]; i++)
+        if (mas[i]%i==0) value_I = true;
+
+   
+
+        if (value_I == true)
+        {
+            for(int j=n; j>i; j--)
+                mas[j] = mas[j-1];
+            i++;
+            n++;    
+        }
+    }
+
+    //Вывод
+    for(int i=0; i<n; i++)
+        std::cout << mas[i] << " ";
+    
+    return 0;
+
 
 
 
