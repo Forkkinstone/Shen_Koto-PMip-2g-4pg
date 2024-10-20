@@ -36,7 +36,7 @@ int main ()
     }
 
     //Сортировка
-    if(!isSum12)
+    if(isSum12 == false)
     {
         for(int i=0; i<n-1;i++)
             for(int j=i+1; j<n; j++)
@@ -56,5 +56,9 @@ int main ()
     return 0;
 
 }
+
+
+
+
 
 
