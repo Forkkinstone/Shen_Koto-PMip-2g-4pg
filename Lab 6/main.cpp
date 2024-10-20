@@ -21,7 +21,7 @@ int main ()
         int value = mas[i];
         int sum = 0;
 
-        while(value > 9)
+        while(value > 0)
             {
                 value = value / 10;
                 sum += value;
