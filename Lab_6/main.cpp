@@ -221,7 +221,6 @@ int main ()
     
     return 0;
 
-
     //3
     int matrix[100][100];
     int n, m;
@@ -234,28 +233,19 @@ int main ()
         }
     }
 
-    // Создание массива для подсчета
-    int *count = new int[m];
-    for (int j = 0; j < m; ++j) {
-        count[j] = 0;
-    }
-
     // Подсчет количества чисел, оканчивающихся на 3, для каждого столбца
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < m; ++j) {
+    int min_count = INT_MAX; // Максимальное возможное значение int
+    int min_index = 0;
+    for (int j = 0; j < m; ++j) {
+        int count = 0;
+        for (int i = 0; i < n; ++i) {
             if (matrix[i][j] % 10 == 3) {
-                ++count[j];
+                ++count;
             }
         }
-    }
-
-    // Поиск индекса минимального элемента
-    int min_index = 0;
-    int min_count = count[0];
-    for (int i = 1; i < m; ++i) {
-        if (count[i] < min_count) {
-            min_index = i;
-            min_count = count[i];
+        if (count < min_count) {
+            min_count = count;
+            min_index = j;
         }
     }
 
@@ -276,25 +266,7 @@ int main ()
         std::cout << std::endl;
     }
 
-    delete[] count; // Удаление памяти после использования
-
     return 0;
 
 
-
-    
-
-
-
-
-
-
-
-
 }
-
-
-
-
-
-
