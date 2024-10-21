@@ -222,6 +222,36 @@ int main ()
     return 0;
 
 
+    //3
+    int matrix[100][100];
+    int n,m;
+    std::cin >> n >> m;
+
+    //Ввод
+    for(int i=0; i<n; i++)
+        for(int j=0; j<m; j++)
+            std::cin >> matrix[i][j];
+
+    
+
+    
+
+
+
+    //Вывод
+    for(int i=0; i<n; i++)
+    {
+        for(int j=0; j<m; j++)
+            std::cout << matrix[i][j] << " ";
+        std::cout << std::endl;
+    }
+
+
+
+    
+
+
+
 
 
 
