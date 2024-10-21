@@ -224,27 +224,61 @@ int main ()
 
     //3
     int matrix[100][100];
-    int n,m;
+    int n, m;
     std::cin >> n >> m;
 
-    //Ввод
-    for(int i=0; i<n; i++)
-        for(int j=0; j<m; j++)
+    // Ввод
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
             std::cin >> matrix[i][j];
+        }
+    }
 
-    
+    // Создание массива для подсчета
+    int *count = new int[m];
+    for (int j = 0; j < m; ++j) {
+        count[j] = 0;
+    }
 
-    
+    // Подсчет количества чисел, оканчивающихся на 3, для каждого столбца
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; ++j) {
+            if (matrix[i][j] % 10 == 3) {
+                ++count[j];
+            }
+        }
+    }
 
+    // Поиск индекса минимального элемента
+    int min_index = 0;
+    int min_count = count[0];
+    for (int i = 1; i < m; ++i) {
+        if (count[i] < min_count) {
+            min_index = i;
+            min_count = count[i];
+        }
+    }
 
+    // Замена всех элементов, за исключением элементов найденного столбца
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; ++j) {
+            if (j != min_index) {
+                matrix[i][j] = -17;
+            }
+        }
+    }
 
-    //Вывод
-    for(int i=0; i<n; i++)
-    {
-        for(int j=0; j<m; j++)
+    // Вывод результата
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; ++j) {
             std::cout << matrix[i][j] << " ";
+        }
         std::cout << std::endl;
     }
+
+    delete[] count; // Удаление памяти после использования
+
+    return 0;
 
 
 
