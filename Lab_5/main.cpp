@@ -1,32 +1,40 @@
 #include <iostream>
 int main ()
 {
-    int N;
-    int i;
+    //1
+    int n;
     int sum = 0;
-    int i_min; // Определяется, с какого минимального значения цик будет пробегаться до числа N
-    std::cin >> N >> i_min;
+    int minC = INT_MAX;
+    int index = 0;
 
-    for (i=i_min; i<=N; i++) // Проходимся по циклу при условии, что i%10!=1 прибавляем к сумме элемент
-    
-        if (i%10!=1) 
+    std::cout << "Enter a number, the number of number in the sequence: ";
+    std::cin >> n;
+
+    for(int i=0; i<n; ++i)
+    {
+        int num;
+        std::cout << "Entering the sequence number: ";
+        std::cin >> num;
+
+        if(num % 10 == 1)
         {
-            sum += i;
+            if (num < minC)
+            {
+                minC = num;
+                index = i;
+            }
+            sum += num;
         }
+    }
 
-    std::cout << "sum: " << sum << std::endl; // Считается и выводится сумма элементов, не оканчивающихся на 1.
+    std::cout << "The sum of numbers that do not end in one: " << sum << std::endl;
+    std::cout << "The smallest number: " << minC << std::endl;
+    std::cout << "Index: " << index << std::endl;
 
-    for (i=i_min; i<=N; i++) 
-
-        if (i%10==1) // Проходимся по циклу при альтернативном условии
-        {
-            std::cout << "min_1: " << i << std::endl; // Выводится первое попавшееся число, оканчивающееся на 1
-            std::cout << "num_1: " << i-i_min + 1 << std::endl; // Простой алгоритм для подсчёта и вывода номера элемента. 
-            break;
-        }
-    
     return 0;
 
+
+    //2
     int N;
     std::cout << "Enter a number: " << std::endl;
     std::cin >> N; 
