@@ -1,0 +1,17 @@
+// Проверка наличия столбцов без простых чисел с суммой 0
+    for (int col = 0; col < n && !hasZeroSumColumnWithoutPrimes; col++) {
+        int sum = 0;
+        bool allNonPrimes = true;
+        
+        for (int row = 0; row < n; row++) {
+            sum += matrix[row][col];
+            
+            if (isPrime(matrix[row][col])) {
+                allNonPrimes = false;
+            }
+        }
+        
+        if (sum == 0 && allNonPrimes) {
+            hasZeroSumColumnWithoutPrimes = true;
+        }
+    }
