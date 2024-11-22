@@ -1,33 +1,20 @@
 #include <iostream>
+#include <cmath> // Для использования abs()
+#include "func.hpp"
 
-// Функция для проверки, является ли число простым
-bool isPrime(int num) {
-    if (num <= 1)
-        return false;
-    for (int i = 2; i * i <= num; i++) {
-        if (num % i == 0)
-            return false;
-    }
-    return true;
-}
-
-int main() {
-    int n;
-    std::cin >> n;
-    
+int main()
+{
+    using namespace func;
     int matrix[100][100];
-    
-    // Ввод матрицы
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            std::cin >> matrix[i][j];
-        }
-    }
-    
+    int n, m, i = 0, j = 0;
+    std::cin >> n >> m;
+
+    read(matrix, i, j, n, m); // Ввод
+
     bool hasZeroSumColumnWithoutPrimes = false;
-    
-    // Проверка наличия столбцов без простых чисел с суммой 0
-    for (int col = 0; col < n && !hasZeroSumColumnWithoutPrimes; col++) {
+
+    // Проверяем наличие столбцов без простых чисел с суммой 0
+    for (int col = 0; col < m && !hasZeroSumColumnWithoutPrimes; col++) {
         int sum = 0;
         bool allNonPrimes = true;
         
@@ -43,30 +30,26 @@ int main() {
             hasZeroSumColumnWithoutPrimes = true;
         }
     }
-    
-    // Упорядочивание строк по неубыванию абсолютных величин
+
+    /// Упорядочиваем строки по неубыванию абсолютных величин
     if (hasZeroSumColumnWithoutPrimes) {
-        for (int row = 0; row < n; row++) {
-            // Сортировка строки по неубыванию абсолютных величин
-            for (int i = 0; i < n - 1; i++) {
-                for (int j = 0; j < n - i - 1; j++) {
-                    if (std::abs(matrix[row][j]) > std::abs(matrix[row][j + 1])) {
-                        int temp = matrix[row][j];
-                        matrix[row][j] = matrix[row][j + 1];
-                        matrix[row][j + 1] = temp;
+        // Сортировка всех строк
+        for (int k = 0; k < n; k++) {
+            // Пузырьковая сортировка для текущей строки
+            for (int l = 0; l < m - 1; l++) {
+                for (int p = 0; p < m - l - 1; p++) {
+                    if (std::abs(matrix[k][p]) > std::abs(matrix[k][p + 1])) {
+                        int temp = matrix[k][p];
+                        matrix[k][p] = matrix[k][p + 1];
+                        matrix[k][p + 1] = temp;
                     }
                 }
             }
-        }
+        }  
     }
-    
-    // Вывод результата
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            std::cout << matrix[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-    
+
+    write(matrix, i, j, n, m);  // Вывод
+    std::cout << "Press Enter to continue..." << std::endl;
+    std::cin.get();  // Ждем нажатия клавиши Enter
     return 0;
 }
