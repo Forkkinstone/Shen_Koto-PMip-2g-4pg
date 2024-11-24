@@ -25,11 +25,41 @@ bool Read(int& n, int& cnt, std::string words[N_Max])
     return true;
 }
 
-void Write(int cnt, std::string words[N_Max])
+void DebugWrite(int cnt, std::string words[N_Max], int countLetters[N_Max])
 {
     for(int i=0; i<cnt; i++)
-        std::cout << "<" << words[i] << ">" << std::endl;
+        std::cout << "<" << words[i] << "> " << countLetters[i] << std::endl;
 }
+
+void Write(int n, int cnt, std::string words[N_Max], int countLetters[N_Max])
+{
+    bool first = true;
+    std::string previous = "";
+    for(int i=0; i<cnt; i++)
+    {
+        if(n == 0)
+            break;
+
+        if(first)
+        {
+            std::cout << "<" << words[i] << "> " << countLetters[i] << std::endl;
+            n--;
+            first = false;
+            previous = words[i];
+            continue;
+        }
+
+        if(words[i] != previous)
+        {
+            previous = words[i];
+            std::cout << "<" << words[i] << "> " << countLetters[i] << std::endl;
+            n--;
+        }
+
+    }
+        
+}
+
 
 void ClearWords(int cnt, std::string words[N_Max])
 {
@@ -40,16 +70,41 @@ void ClearWords(int cnt, std::string words[N_Max])
             {
                 words[i].erase(j, 1);
                 j--;
+                continue;
             }
+            else 
+                words[i][j] = tolower(words[i][j]);
         }
 }
 
-bool isValidWord(const std::string& word, const char* forbidden_letters) {
-    for (size_t i = 0; i < word.length(); i++) {
-        if (strchr(forbidden_letters, tolower(word[i])))
-            return false;
+void CountEqualLetters(int cnt, std::string words[N_Max], int countLetters[N_Max])
+{
+    for(int i=0; i<cnt; i++)
+    {
+        char letters[256] = {0};
+        for(int j=0; j<words[i].length(); j++)
+        {
+            char c = tolower(words[i][j]);
+            letters[c]++;
+        }
+
+        int max = INT_MIN;
+        for(int k=0; k<256; k++) 
+            if(letters[k]>max)
+                max = letters[k];
+            countLetters[i] = max;
     }
-    return true;
+}
+
+void Sort(int cnt, std::string words[N_Max], int countLetters[N_Max])
+{
+    for(int i=0; i<cnt-1; i++)
+        for(int j=i+1; j<cnt; j++)
+            if ((countLetters[i] < countLetters[j]) || (countLetters[i] == countLetters[j]) && words[i] < words[j] )
+            {
+                std::swap(countLetters[i], countLetters[j]);
+                std::swap(words[i], words[j]);
+            }
 }
 
 int main()
@@ -63,49 +118,15 @@ int main()
 
     ClearWords(cnt, words);
 
-    // Чтение запрещенных букв
-    char forbidden_letters[3];
-    std::cin >> forbidden_letters[0] >> forbidden_letters[1] >> forbidden_letters[2];
+    int countLetters[N_Max] = {0};
+    CountEqualLetters(cnt, words, countLetters);
 
-    // Массив для хранения уникальных слов
-    std::string unique_words[N_Max];
-    int unique_count = 0;
-
-    // Поиск всех допустимых слов
-    for (int i = 0; i < cnt; i++) {
-        if (isValidWord(words[i], forbidden_letters)) {
-            bool is_duplicate = false;
-            for (int j = 0; j < unique_count; j++) {
-                if (words[i] == unique_words[j]) {
-                    is_duplicate = true;
-                    break;
-                }
-            }
-            if (!is_duplicate) {
-                unique_words[unique_count++] = words[i];
-            }
-        }
-    }
-
-    // Сортировка слов по длине
-    for (int i = 0; i < unique_count - 1; i++) {
-        for (int j = i + 1; j < unique_count; j++) {
-            if (unique_words[i].length() < unique_words[j].length()) {
-                std::swap(unique_words[i], unique_words[j]);
-            }
-        }
-    }
-
-    // Запись результата в файл
-    std::ofstream out("output.txt");
-    for (int i = 0; i < unique_count && i < N_Max; i++) {
-        out << unique_words[i] << std::endl;
-    }
+    Sort(cnt, words, countLetters);
 
 
-
-
-    Write(cnt, words);
+    DebugWrite(cnt, words, countLetters);
+    std::cout << "====" << std::endl;
+    Write(n, cnt, words, countLetters);
 
     return 0;
 
