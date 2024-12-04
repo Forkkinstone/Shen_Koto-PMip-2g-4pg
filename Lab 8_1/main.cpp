@@ -7,20 +7,21 @@ const int N_Max = 2000;
 bool Read(int& n, int& cnt, std::string words[N_Max])
 {
     std::ifstream in("input.txt");
+
     if(!in.is_open())
-    {
-        std::cerr << "File not found";
-        return false;
-    }
+        {
+            std::cerr << "File not found";
+            return false;
+        }
 
     in >> n;
     cnt = 0;
 
     while(!in.eof())
-    {
-        in >> words[cnt];
-        cnt++;
-    }
+        {
+            in >> words[cnt];
+            cnt++;
+        }
 
     return true;
 }
@@ -57,7 +58,6 @@ void Write(int n, int cnt, std::string words[N_Max], int countLetters[N_Max])
         }
 
     }
-        
 }
 
 
@@ -114,20 +114,17 @@ int main()
     std::string words[N_Max];
 
     if(!Read(n, cnt, words))
-    return -1;
+        return -1;
 
     ClearWords(cnt, words);
 
     int countLetters[N_Max] = {0};
     CountEqualLetters(cnt, words, countLetters);
 
-    Sort(cnt, words, countLetters);
-
-
     DebugWrite(cnt, words, countLetters);
-    std::cout << "====" << std::endl;
+        std::cout << "====" << std::endl;
+
     Write(n, cnt, words, countLetters);
 
     return 0;
-
 }
