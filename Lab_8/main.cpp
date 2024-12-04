@@ -2,134 +2,140 @@
 #include <string>
 #include <fstream>
 
-const int N_Max = 2000;
+const int MAX_WORDS = 5120;
 
-bool Read(int& n, int& cnt, std::string words[N_Max])
-{
+bool Read(int& n, int& cnt, std::string words[MAX_WORDS]) {
     std::ifstream in("input.txt");
-    if(!in.is_open())
-    {
-        std::cerr << "File not found";
+    if (!in.is_open()) {
+        std::cerr << "File not opened" << std::endl;
         return false;
     }
-
-    in >> n;
-    cnt = 0;
-
-    while(!in.eof())
-    {
-        in >> words[cnt];
-        cnt++;
+    
+    n = 0;
+    while (in >> words[n] && n < MAX_WORDS) {
+        n++;
     }
 
     return true;
 }
 
-void DebugWrite(int cnt, std::string words[N_Max], int countLetters[N_Max])
+void DebugWrite(std::string& word)
 {
-    for(int i=0; i<cnt; i++)
-        std::cout << "<" << words[i] << "> " << countLetters[i] << std::endl;
-}
-
-void Write(int n, int cnt, std::string words[N_Max], int countLetters[N_Max])
-{
-    bool first = true;
-    std::string previous = "";
-    for(int i=0; i<cnt; i++)
+    std::string newWord;
+    for (char c : word)
     {
-        if(n == 0)
-            break;
-
-        if(first)
-        {
-            std::cout << "<" << words[i] << "> " << countLetters[i] << std::endl;
-            n--;
-            first = false;
-            previous = words[i];
-            continue;
-        }
-
-        if(words[i] != previous)
-        {
-            previous = words[i];
-            std::cout << "<" << words[i] << "> " << countLetters[i] << std::endl;
-            n--;
-        }
-
+        if(!std::ispunct(c))
+            newWord += c;
     }
-        
+    word = newWord;
 }
 
+bool isVowel(char c) {
+    c = tolower(c);
+    return (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' || c == 'y');
+}
 
-void ClearWords(int cnt, std::string words[N_Max])
-{
-    for(int i=0; i<cnt; i++)
-        for(int j=0; j<words[i].length(); j++)
-        {
-            if(!isalpha(words[i][j]))
-            {
-                words[i].erase(j, 1);
-                j--;
-                continue;
+bool hasDuplicateVowels(const std::string& word) {
+    int vowelCount[26] = {0};
+    for (char c : word) {
+        if (isVowel(c)) {
+            vowelCount[tolower(c) - 'a']++;
+            if (vowelCount[tolower(c) - 'a'] >= 2) {
+                return true;
             }
-            else 
-                words[i][j] = tolower(words[i][j]);
         }
+    }
+    return false;
 }
 
-void CountEqualLetters(int cnt, std::string words[N_Max], int countLetters[N_Max])
-{
-    for(int i=0; i<cnt; i++)
-    {
-        char letters[256] = {0};
-        for(int j=0; j<words[i].length(); j++)
-        {
-            char c = tolower(words[i][j]);
-            letters[c]++;
+void RemoveConsonants(int n, std::string words[MAX_WORDS]) {
+    for (int i = 0; i < n; i++) {
+        std::string newWord;
+        for (char c : words[i]) {
+            if (isVowel(c) || c == ' ' || c == ',') { // Assuming we want to keep spaces and commas
+                newWord += c;
+            }
         }
-
-        int max = INT_MIN;
-        for(int k=0; k<256; k++) 
-            if(letters[k]>max)
-                max = letters[k];
-            countLetters[i] = max;
+        words[i] = newWord;
     }
 }
 
-void Sort(int cnt, std::string words[N_Max], int countLetters[N_Max])
-{
-    for(int i=0; i<cnt-1; i++)
-        for(int j=i+1; j<cnt; j++)
-            if ((countLetters[i] < countLetters[j]) || (countLetters[i] == countLetters[j]) && words[i] < words[j] )
-            {
-                std::swap(countLetters[i], countLetters[j]);
+void DuplicateVowels(std::string& word) {
+    std::string newWord;
+    for (char c : word) {
+        newWord += c;
+        if (isVowel(c)) {
+            newWord += c; // Duplicate vowel
+        }
+    }
+    word = newWord;
+}
+
+void Sort(int n, std::string words[MAX_WORDS]) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (words[i] > words[j]) {
                 std::swap(words[i], words[j]);
             }
+        }
+    }
 }
 
-int main()
+bool isNotLessThan3Vowels(const std::string& word) {
+    int count = 0;
+    for (char c : word) {
+        if (isVowel(c)) {
+            count++;
+        }
+    }
+    return count >= 3;
+}
+
+void Write(int& n, std::string words[5120])
 {
+    for (int i = 0; i < n; i++) {
+        if (!words[i].empty()) {
+            DebugWrite(words[i]);
+            std::cout << "<" << words[i] << ">" << std::endl;
+        }
+    }
+}
+
+int main() {
+
     int n;
     int cnt;
-    std::string words[N_Max];
+    int countLetters[MAX_WORDS] = {0};
+    std::string words[MAX_WORDS];
 
-    if(!Read(n, cnt, words))
-    return -1;
+    if (!Read(n, cnt, words)) {
+        return -1;
+    }
 
-    ClearWords(cnt, words);
+    bool hasEqualVowels = false;
+    for (int i = 0; i < n; i++) {
+        if (hasDuplicateVowels(words[i])) {
+            hasEqualVowels = true;
+            break;
+        }
+    }
 
-    int countLetters[N_Max] = {0};
-    CountEqualLetters(cnt, words, countLetters);
+    if (hasEqualVowels) {
+        RemoveConsonants(n, words);
+    } else {
+        for (int i = 0; i < n; i++) {
+            if (isNotLessThan3Vowels(words[i])) {
+                DuplicateVowels(words[i]);
+            }
+        }
+    }
 
-    Sort(cnt, words, countLetters);
+    Sort(n, words);
 
+    Write(n, words);
 
-    DebugWrite(cnt, words, countLetters);
-    std::cout << "====" << std::endl;
-    Write(n, cnt, words, countLetters);
+    
 
     return 0;
-
-
-
 }
+
