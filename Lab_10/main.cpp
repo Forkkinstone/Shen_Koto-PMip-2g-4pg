@@ -1,141 +1,187 @@
-#include <iostream>
-#include <unordered_set>
+#include <stdio.h>
+#include <stdlib.h>
 
-struct Node {
+typedef struct Node 
+{
     int data;
-    Node* next;
+    struct Node *next;
+} Node;
+
+Node* createNode(int data) 
+{
+    Node *newNode = (Node*)malloc(sizeof(Node)); //Выделение памяти для нового узла
+    newNode -> data = data; //Запись данных в узел
+    newNode -> next = NULL; //Изначально следующий указатель равен NULL
+    return newNode; //Возврат указателя на новый узел 
+}
+
+bool hasDuplicateDigits(int number) 
+{
+    int digitCount[10] = {0}; //Массив для подсчёта числа каждой цифры
     
-    Node(int val) : data(val), next(nullptr) {}
-};
+    while(number > 0) 
+    {
+        int digit = number % 10; //Получение последней цифры
+        digitCount[digit]++; // Увеличение счётчика для этой цифры
+        
+        if(digitCount[digit] > 1) //Если цифра встречается более одного раза
+        {
+            return true; //Найдена дубликатная цифра
+        }
 
-class LinkedList {
-public:
-    Node* head;
+        number /= 10; //Удаление последней цифры
+    }
+    
+    return false; //Дубликатов нет
+}
 
-    LinkedList() : head(nullptr) {}
+void insertEnd(Node **head, int data)
+{
+    Node *newNode = createNode(data); //Создание нового узла
 
-    void append(int val) {
-        if (!head) {
-            head = new Node(val);
-        } else {
-            Node* current = head;
-            while (current->next) {
-                current = current->next;
+    if(*head == NULL)
+    {
+        //Если список пуст
+        *head = newNode; //Новый узел становится гловой списка
+    }
+    else
+    {
+        Node *temp = *head;
+
+        while(temp -> next != NULL)
+        {
+            temp = temp -> next; //Поиск конца списка
+        }
+
+        temp -> next = newNode; //Присоединение нового узла в конец
+    }
+}
+
+void sortByFirstDigit(Node *head) //Простая сортировка вставками по первой цифре числа
+{
+    if(head == NULL || head -> next == NULL)
+        return;
+
+    Node *sorted = NULL; //Начало отсортированного списка
+
+    while(head != NULL)
+    {
+        Node *current = head; //Текущий узел для вставки
+        head = head -> next; //Переход к следующему узлу
+
+        if(sorted == NULL || (current -> data / 10) < (sorted -> data / 10))
+        {
+            current -> next = sorted; //Вставка в начало отсортированного списка
+            sorted = current; //обновление головы отсортированного списка
+        }
+        else
+        {
+            Node *temp = sorted;
+
+            while(temp -> next != NULL && (temp -> next -> data / 10) <= (current -> data / 10))
+            {
+                temp = temp -> next; //Поиск места вставки
             }
-            current->next = new Node(val);
+
+            current -> next = temp -> next; //Вставка текущего узла
+            temp -> next = current; 
+            
         }
     }
 
-    void display() {
-        Node* current = head;
-        while (current) {
-            std::cout << current->data << " ";
-            current = current->next;
+    //Обновление головы изменённого списка
+    head = sorted;
+}
+
+void processList(Node **head)
+{
+    if(*head == NULL) return; //Если список пуст
+
+    bool hasDuplicates = false; //Флаг для проверки дубликатов
+
+    Node *temp = *head;
+
+    while(temp != NULL)
+    {
+        if(hasDuplicateDigits(temp -> data))
+        {
+            hasDuplicates = true; //Если есть дубликаты, устанавливаем флаг
+            break; //Прерываем проверку
         }
-        std::cout << std::endl;
+
+        temp = temp -> next; //Переход к следующему узлу
     }
 
-    bool hasDuplicateDigits() {
-        Node* current = head;
-        while (current) {
-            if (containsDuplicateDigits(current->data)) {
-                return true;
+    if(hasDuplicates)
+    {
+        sortByFirstDigit(*head); //Сортируем по первой цифре
+    }
+    else
+    {
+        Node *current = *head;
+        Node *newHead = NULL;
+
+        while(current != NULL)
+        {
+            if(current -> data % 2 != 0) //Если число нечётное
+            {
+                insertEnd(&newHead, current -> data); //Дублируем его
+                insertEnd(&newHead, current -> data);
             }
-            current = current->next;
+
+            current = current -> next; //Переход к следующему узлу
         }
-        return false;
+        *head = newHead; //Обновление исходного списка
+    }
+}
+
+void printList(Node *head)
+{
+    while(head != NULL)
+    {
+        printf("%d ", head -> data); //Вывод данных узла
+        head = head -> next; //Переход к следующему узлу
     }
 
-    void sortByFirstDigit() {
-        if (!head) return;
+    printf("\n");
+}
 
-        // Smoothing sort implementation by first digit
-        bool swapped;
-        do {
-            swapped = false;
-            Node* current = head;
-            while (current && current->next) {
-                if (getFirstDigit(current->data) > getFirstDigit(current->next->data)) {
-                    std::swap(current->data, current->next->data);
-                    swapped = true;
-                }
-                current = current->next;
-            }
-        } while (swapped);
+void freeList(Node *head)
+{
+    while(head != NULL)
+    {
+        Node *temp = head; //Временный указатель на текущий узел
+        head = head -> next; //Переход к следующему узлу
+        free(temp); //Освобождение памяти
     }
+}
 
-    void modifyList() {
-        if (!head) return;
+int main()
+{
+    Node *head = NULL; //Инициализация головы списка
 
-        Node* current = head;
-        Node* newHead = nullptr; // New list for odd numbers
-
-        while (current) {
-            if (current->data % 2 != 0) { // Odd number
-                appendToList(newHead, current->data);
-                appendToList(newHead, current->data); // Duplicate
-            }
-            current = current->next;
-        }
-        head = newHead; // Update head to new modified list
-    }
-
-private:
-    bool containsDuplicateDigits(int number) {
-        std::unordered_set<int> digits;
-        while (number > 0) {
-            int digit = number % 10;
-            if (digits.find(digit) != digits.end()) {
-                return true; // Duplicate found
-            }
-            digits.insert(digit);
-            number /= 10;
-        }
-        return false;
-    }
-
-    void appendToList(Node*& head, int val) {
-        if (!head) {
-            head = new Node(val);
-        } else {
-            Node* current = head;
-            while (current->next) {
-                current = current->next;
-            }
-            current->next = new Node(val);
-        }
-    }
-
-    int getFirstDigit(int number) {
-        while (number >= 10) {
-            number /= 10;
-        }
-        return number;
-    }
-};
-
-int main() {
-    LinkedList list;
+    //Ввод последовательности натуральных чисел
     int number;
+    printf("Введите последовательность натуральных чисел (0 для завершения):\n");
 
-    std::cout << "Enter a sequence of natural numbers (enter -1 to stop):" << std::endl;
-    while (std::cin >> number && number != -1) {
-        if (number > 0) { // Ensure the input is a natural number
-            list.append(number);
-        } else {
-            std::cout << "Please enter a natural number." << std::endl;
-        }
+    while(1)
+    {
+        scanf("%d", &number); //Чтение числа
+        
+        if(number == 0) break; //Завершение ввода
+
+        insertEnd(&head, number); //Вставка числа в список
     }
 
-    if (list.hasDuplicateDigits()) {
-        list.sortByFirstDigit();
-        std::cout << "Sorted list by first digit:" << std::endl;
-    } else {
-        list.modifyList();
-        std::cout << "Modified list (even numbers removed, odd numbers duplicated):" << std::endl;
-    }
+    //Обработка списка
+    processList(&head);
 
-    list.display();
+    //Вывод результата
+    printf("Результат:\n");
+    printList(head);
 
+    //Освобождение памяти
+    freeList(head);
+    
     return 0;
 }
