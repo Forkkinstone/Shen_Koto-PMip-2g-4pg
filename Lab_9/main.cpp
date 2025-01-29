@@ -1,19 +1,18 @@
 #include <iostream>
-using namespace std;
 
-void printBytes(int number) {
-    unsigned char* ptr = reinterpret_cast<unsigned char*>(&number);
+int main()
+{
+    long long number = 1237635123463254753LL;
 
-    cout << "Adress: " << static_cast<void*>(ptr) << endl;
-    cout << "Size int: " << sizeof(number) << " byte " << endl;
+    unsigned char* bytePointer = (unsigned char *)&number;
 
-    for (size_t i = 0; i < sizeof(number); ++i) {
-        cout << "Byte " << i << ": " << hex << static_cast<int>(ptr[i]) << endl;
+    std::cout << number << std::endl;
+
+    for(size_t i=0; i < sizeof(long long); i++)
+    {
+        printf("%zu: %02x\n", i, bytePointer[i]);
     }
-}
 
-int main() {
-    int number = 4236423465;
-    printBytes(number);
     return 0;
+
 }
