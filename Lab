@@ -1,0 +1,100 @@
+#include <iostream>
+#include <stdlib.h>
+
+typedef struct Node 
+{
+    int data;
+    struct Node *next;
+} Node;
+
+Node* createNode(int data) 
+{
+    Node *newNode = (Node*)malloc(sizeof(Node)); //Выделение памяти для нового узла
+    newNode -> data = data; //Запись данных в узел
+    newNode -> next = NULL; //Изначально следующий указатель равен NULL
+    return newNode; //Возврат указателя на новый узел 
+}
+
+bool hasDuplicateDigits(int number) 
+{
+    int digitCount[10] = {0}; //Массив для подсчёта числа каждой цифры
+    
+    while(number > 0) 
+    {
+        int digit = number % 10; //Получение последней цифры
+        digitCount[digit]++; // Увеличение счётчика для этой цифры
+        
+        if(digitCount[digit] > 1) //Если цифра встречается более одного раза
+        {
+            return true; //Найдена дубликатная цифра
+        }
+
+        number /= 10; //Удаление последней цифры
+    }
+    
+    return false; //Дубликатов нет
+}
+
+void insertEnd(Node **head, int data)
+{
+    Node *newNode = createNode(data); //Создание нового узла
+
+    if(*head == NULL)
+    {
+        //Если список пуст
+        *head = newNode; //Новый узел становится гловой списка
+    }
+    else
+    {
+        Node *temp = *head;
+
+        while(temp -> next != NULL)
+        {
+            temp = temp -> next; //Поиск конца списка
+        }
+
+        temp -> next = newNode; //Присоединение нового узла в конец
+    }
+}
+
+void sortByFirstDigit(Node *head) //Простая сортировка вставками по первой цифре числа
+{
+    if(head == NULL || head -> next == NULL)
+        return;
+
+    Node *sorted = NULL; //Начало отсортированного списка
+
+    while(head != NULL)
+    {
+        Node *current = head; //Текущий узел для вставки
+
+    }
+
+
+
+
+
+
+
+
+лаба 9 
+
+
+#include <iostream>
+
+int main()
+{
+    long long number = 1237635123463254753LL;
+
+    unsigned char* bytePointer = (unsigned char *)&number;
+
+    std::cout << number << std::endl;
+
+    for(size_t i=0; i < sizeof(long long); i++)
+    {
+        printf("%zu: %02x\n", i, bytePointer[i]);
+    }
+
+    return 0;
+
+}
