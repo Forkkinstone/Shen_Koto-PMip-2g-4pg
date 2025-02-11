@@ -1,18 +1,20 @@
 #include <iostream>
 
-int main()
-{
-    long long number = 1237635123463254753LL;
+int main() {
+    long long number;  // Создаем переменную типа long long (обычно 8 байт)
+    std::cout << "Введите число: ";
+    std::cin >> number;     // Получаем число от пользователя
 
-    unsigned char* bytePointer = (unsigned char *)&number;
+    // Преобразуем указатель на число в указатель на байт (unsigned char)
+    unsigned char* byte_ptr = reinterpret_cast<unsigned char*>(&number);
 
-    std::cout << number << std::endl;
-
-    for(size_t i=0; i < sizeof(long long); i++)
-    {
-        printf("%zu: %02x\n", i, bytePointer[i]);
+    std::cout << "Байты числа " << number << " в памяти:\n";
+    
+    // Проходим по всем байтам числа (от младшего к старшему)
+    for (int i = 0; i < sizeof(number); ++i) {
+        // Выводим числовое значение байта (преобразуем char в int)
+        std::cout << "Байт " << i << ": " << static_cast<int>(*(byte_ptr + i)) << std::endl;
     }
-
+    
     return 0;
-
 }
