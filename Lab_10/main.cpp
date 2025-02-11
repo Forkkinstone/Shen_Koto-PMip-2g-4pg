@@ -1,187 +1,138 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
+using namespace std;
 
-typedef struct Node 
-{
-    int data;
-    struct Node *next;
-} Node;
+// Структура узла односвязного списка
+struct Node {
+    int data;     // Данные узла (натуральное число)
+    Node* next;   // Указатель на следующий узел
+};
 
-Node* createNode(int data) 
-{
-    Node *newNode = (Node*)malloc(sizeof(Node)); //Выделение памяти для нового узла
-    newNode -> data = data; //Запись данных в узел
-    newNode -> next = NULL; //Изначально следующий указатель равен NULL
-    return newNode; //Возврат указателя на новый узел 
+// Проверяет, есть ли в числе две одинаковые цифры
+bool hasDuplicateDigits(int num) {
+    bool digits[10] = {false}; // Массив для отслеживания встреченных цифр
+    while (num > 0) {
+        int digit = num % 10;  // Получаем последнюю цифру
+        if (digits[digit])     // Если цифра уже встречалась
+            return true;
+        digits[digit] = true;  // Отмечаем цифру
+        num /= 10;             // Убираем последнюю цифру
+    }
+    return false;
 }
 
-bool hasDuplicateDigits(int number) 
-{
-    int digitCount[10] = {0}; //Массив для подсчёта числа каждой цифры
-    
-    while(number > 0) 
-    {
-        int digit = number % 10; //Получение последней цифры
-        digitCount[digit]++; // Увеличение счётчика для этой цифры
-        
-        if(digitCount[digit] > 1) //Если цифра встречается более одного раза
-        {
-            return true; //Найдена дубликатная цифра
-        }
-
-        number /= 10; //Удаление последней цифры
-    }
-    
-    return false; //Дубликатов нет
+// Возвращает первую цифру числа
+int firstDigit(int n) {
+    while (n >= 10) // Пока число больше 10
+        n /= 10;     // Убираем последнюю цифру
+    return n;
 }
 
-void insertEnd(Node **head, int data)
-{
-    Node *newNode = createNode(data); //Создание нового узла
+// Пузырьковая сортировка списка по первой цифре
+void bubbleSort(Node* head) {
+    if (!head) return; // Пустой список
 
-    if(*head == NULL)
-    {
-        //Если список пуст
-        *head = newNode; //Новый узел становится гловой списка
-    }
-    else
-    {
-        Node *temp = *head;
+    bool swapped;
+    Node* ptr1;
+    Node* lastSorted = nullptr;
 
-        while(temp -> next != NULL)
-        {
-            temp = temp -> next; //Поиск конца списка
-        }
+    do {
+        swapped = false;
+        ptr1 = head;
 
-        temp -> next = newNode; //Присоединение нового узла в конец
-    }
-}
+        while (ptr1->next != lastSorted) {
+            int fd1 = firstDigit(ptr1->data);       // Первая цифра текущего узла
+            int fd2 = firstDigit(ptr1->next->data); // Первая цифра следующего узла
 
-void sortByFirstDigit(Node *head) //Простая сортировка вставками по первой цифре числа
-{
-    if(head == NULL || head -> next == NULL)
-        return;
-
-    Node *sorted = NULL; //Начало отсортированного списка
-
-    while(head != NULL)
-    {
-        Node *current = head; //Текущий узел для вставки
-        head = head -> next; //Переход к следующему узлу
-
-        if(sorted == NULL || (current -> data / 10) < (sorted -> data / 10))
-        {
-            current -> next = sorted; //Вставка в начало отсортированного списка
-            sorted = current; //обновление головы отсортированного списка
-        }
-        else
-        {
-            Node *temp = sorted;
-
-            while(temp -> next != NULL && (temp -> next -> data / 10) <= (current -> data / 10))
-            {
-                temp = temp -> next; //Поиск места вставки
+            if (fd1 > fd2) { // Если порядок нарушен
+                swap(ptr1->data, ptr1->next->data); // Меняем данные местами
+                swapped = true;
             }
-
-            current -> next = temp -> next; //Вставка текущего узла
-            temp -> next = current; 
-            
+            ptr1 = ptr1->next;
         }
-    }
-
-    //Обновление головы изменённого списка
-    head = sorted;
+        lastSorted = ptr1; // Узел уже на своем месте
+    } while (swapped);
 }
 
-void processList(Node **head)
-{
-    if(*head == NULL) return; //Если список пуст
+// Удаляет четные числа и дублирует нечетные
+void processList(Node*& head) {
+    Node* current = head;
+    Node* prev = nullptr;
 
-    bool hasDuplicates = false; //Флаг для проверки дубликатов
-
-    Node *temp = *head;
-
-    while(temp != NULL)
-    {
-        if(hasDuplicateDigits(temp -> data))
-        {
-            hasDuplicates = true; //Если есть дубликаты, устанавливаем флаг
-            break; //Прерываем проверку
-        }
-
-        temp = temp -> next; //Переход к следующему узлу
-    }
-
-    if(hasDuplicates)
-    {
-        sortByFirstDigit(*head); //Сортируем по первой цифре
-    }
-    else
-    {
-        Node *current = *head;
-        Node *newHead = NULL;
-
-        while(current != NULL)
-        {
-            if(current -> data % 2 != 0) //Если число нечётное
-            {
-                insertEnd(&newHead, current -> data); //Дублируем его
-                insertEnd(&newHead, current -> data);
+    while (current != nullptr) {
+        if (current->data % 2 == 0) { // Четное число
+            if (prev == nullptr) {    // Удаление головы
+                head = current->next;
+                delete current;
+                current = head;
+            } else {                  // Удаление из середины/конца
+                prev->next = current->next;
+                delete current;
+                current = prev->next;
             }
-
-            current = current -> next; //Переход к следующему узлу
+        } else { // Нечетное число
+            Node* dup = new Node{current->data, current->next}; // Создаем дубликат
+            current->next = dup;      // Вставляем дубликат
+            prev = current;           // Переходим к дубликату
+            current = dup->next;      // Следующий элемент после дубликата
         }
-        *head = newHead; //Обновление исходного списка
     }
 }
 
-void printList(Node *head)
-{
-    while(head != NULL)
-    {
-        printf("%d ", head -> data); //Вывод данных узла
-        head = head -> next; //Переход к следующему узлу
+// Выводит список на экран
+void printList(Node* head) {
+    Node* current = head;
+    while (current != nullptr) {
+        cout << current->data << " ";
+        current = current->next;
     }
-
-    printf("\n");
+    cout << endl;
 }
 
-void freeList(Node *head)
-{
-    while(head != NULL)
-    {
-        Node *temp = head; //Временный указатель на текущий узел
-        head = head -> next; //Переход к следующему узлу
-        free(temp); //Освобождение памяти
+// Освобождает память списка
+void deleteList(Node* head) {
+    Node* current = head;
+    while (current != nullptr) {
+        Node* next = current->next;
+        delete current;
+        current = next;
     }
 }
 
-int main()
-{
-    Node *head = NULL; //Инициализация головы списка
+int main() {
+    Node* head = nullptr; // Голова списка
+    Node* tail = nullptr; // Хвост списка (для быстрого добавления)
+    int num;
 
-    //Ввод последовательности натуральных чисел
-    int number;
-    printf("Введите последовательность натуральных чисел (0 для завершения):\n");
-
-    while(1)
-    {
-        scanf("%d", &number); //Чтение числа
-        
-        if(number == 0) break; //Завершение ввода
-
-        insertEnd(&head, number); //Вставка числа в список
+    // Ввод чисел
+    cout << "Вводите числа (0 или отрицательное для завершения):\n";
+    while (cin >> num && num > 0) {
+        Node* newNode = new Node{num, nullptr};
+        if (!head) head = tail = newNode; // Первый элемент
+        else {
+            tail->next = newNode; // Добавляем в конец
+            tail = newNode;
+        }
     }
 
-    //Обработка списка
-    processList(&head);
+    // Проверка наличия чисел с дубликатами цифр
+    bool hasDuplicates = false;
+    Node* current = head;
+    while (current && !hasDuplicates) {
+        hasDuplicates = hasDuplicateDigits(current->data);
+        current = current->next;
+    }
 
-    //Вывод результата
-    printf("Результат:\n");
-    printList(head);
+    // Обработка списка
+    if (hasDuplicates) {
+        bubbleSort(head); // Сортировка по первой цифре
+        cout << "Сортировка по первой цифре:\n";
+    } else {
+        processList(head); // Удаление четных и дублирование нечетных
+        cout << "Обработанный список:\n";
+    }
 
-    //Освобождение памяти
-    freeList(head);
-    
+    printList(head); // Вывод результата
+    deleteList(head); // Очистка памяти
+
     return 0;
 }
