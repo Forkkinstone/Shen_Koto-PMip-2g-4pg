@@ -1,0 +1,23 @@
+void processList(Node*& head) {
+    Node* current = head;
+    Node* prev = nullptr;
+
+    while (current != nullptr) {
+        if (current->data % 2 == 0) { // Четное число
+            if (prev == nullptr) {    // Удаление головы
+                head = current->next;
+                delete current;
+                current = head;
+            } else {                  // Удаление из середины/конца
+                prev->next = current->next;
+                delete current;
+                current = prev->next;
+            }
+        } else { // Нечетное число
+            Node* dup = new Node{current->data, current->next}; // Создаем дубликат
+            current->next = dup;      // Вставляем дубликат
+            prev = dup;               // Обновляем prev на дубликат
+            current = dup->next;      // Следующий элемент после дубликата
+        }
+    }
+}
