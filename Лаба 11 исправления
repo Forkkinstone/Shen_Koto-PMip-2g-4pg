@@ -1,0 +1,62 @@
+#include <iostream>
+using namespace std;
+
+// Структура узла двусвязного списка
+struct Node {
+    int data;        // Данные узла
+    Node* prev;      // Указатель на предыдущий узел
+    Node* next;      // Указатель на следующий узел
+    Node(int val) : data(val), prev(nullptr), next(nullptr) {} // Конструктор инициализирует данные и указатели
+};
+
+class DoublyLinkedList {
+private:
+    Node* dummy; // Сторожевой узел для упрощения операций
+
+    // Проверка, является ли число палиндромом
+    bool isPalindrome(int num) {
+        if (num < 10) return false; // Исключаем однозначные числа
+        int original = num;
+        int reversed = 0;
+        while (num > 0) {
+            reversed = reversed * 10 + num % 10; // Реверс числа
+            num /= 10;
+        }
+        return original == reversed;
+    }
+
+    // Получение первой цифры числа
+    int firstDigit(int num) {
+        while (num >= 10) {
+            num /= 10; // Делим до получения первой цифры
+        }
+        return num;
+    }
+
+public:
+    // Конструктор создает кольцевой сторожевой узел
+    DoublyLinkedList() {
+        dummy = new Node(-1);
+        dummy->prev = dummy; // Замыкаем указатели
+        dummy->next = dummy;
+    }
+
+    // Деструктор для освобождения памяти
+    ~DoublyLinkedList() {
+        Node* current = dummy->next;
+        while (current != dummy) {
+            Node* nextNode = current->next;
+            delete current; // Удаляем все узлы
+            current = nextNode;
+        }
+        delete dummy; // Удаляем сторожевой узел
+    }
+
+    // Добавление элемента в конец списка
+    void append(int val) {
+        Node* newNode = new Node(val);
+        Node* tail = dummy->prev; // Хвост списка
+        tail->next = newNode;     // Вставка между хвостом и dummy
+        newNode->prev = tail;
+        newNode->next = dummy;
+        dummy->prev = newNode;    // Обновление хв
