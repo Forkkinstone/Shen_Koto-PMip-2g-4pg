@@ -1,0 +1,131 @@
+#include <iostream>
+using namespace std;
+
+// Структура узла двусвязного циклического списка
+struct Node {
+    int data;       // Данные узла
+    Node* prev;     // Указатель на предыдущий узел
+    Node* next;     // Указатель на следующий узел
+
+    // Конструктор для создания фиктивного узла
+    Node() : data(-1), prev(this), next(this) {}
+    // Конструктор для создания узла с данными
+    Node(int d, Node* p, Node* n) : data(d), prev(p), next(n) {}
+};
+
+// Функция добавления узла в конец списка
+void addNode(Node* dummy, int value) {
+    Node* last = dummy->prev;                // Получаем последний узел
+    Node* newNode = new Node(value, last, dummy); // Создаем новый узел
+    last->next = newNode;                    // Обновляем указатели соседей
+    dummy->prev = newNode;
+}
+
+// Функция проверки, является ли число палиндромом
+bool isPalindrome(int num) {
+    if (num < 10) return true;               // Однозначные числа - палиндромы
+    int reversed = 0, original = num;
+    while (original > 0) {
+        reversed = reversed * 10 + original % 10;
+        original /= 10;
+    }
+    return num == reversed;                   // Сравнение исходного и перевернутого
+}
+
+// Функция проверки упорядоченности списка (неубывание или невозрастание)
+bool checkOrder(Node* dummy, bool& isIncreasing) {
+    if (dummy->next == dummy) return false;  // Пустой список - не упорядочен
+
+    Node* current = dummy->next;
+    int prevData = current->data;
+    bool incr = true, decr = true;
+
+    while ((current = current->next) != dummy) { // Проход по всем узлам
+        if (current->data < prevData) incr = false;
+        if (current->data > prevData) decr = false;
+        prevData = current->data;
+    }
+
+    isIncreasing = incr;
+    return incr || decr;                      // Возвращаем, упорядочен ли список
+}
+
+// Функция обработки упорядоченного списка: удаление палиндромов и дублирование чисел с 0
+void processOrderedList(Node* dummy) {
+    Node* current = dummy->next;
+    while (current != dummy) {
+        Node* nextNode = current->next;      // Сохраняем следующий узел
+
+        if (isPalindrome(current->data)) {   // Удаление палиндрома
+            current->prev->next = current->next;
+            current->next->prev = current->prev;
+            delete current;
+        } else if (current->data % 10 == 0) { // Дублирование числа с 0
+            Node* newNode = new Node(current->data, current, current->next);
+            current->next->prev = newNode;
+            current->next = newNode;
+            nextNode = newNode->next;         // Пропускаем новый узел
+        }
+
+        current = nextNode;
+    }
+}
+
+// Функция получения первой цифры числа
+int firstDigit(int num) {
+    while (num >= 10) num /= 10;             // Делим пока не останется одна цифра
+    return num;
+}
+
+// Сортировка пузырьком по первой цифре (обмен значений)
+void bubbleSort(Node* dummy) {
+    bool swapped;
+    Node* end = dummy;                       // Конец неотсортированной части
+
+    do {
+        swapped = false;
+        Node* curr = dummy->next;
+
+        while (curr->next != end) {
+            if (firstDigit(curr->data) > firstDigit(curr->next->data)) {
+                swap(curr->data, curr->next->data); // Меняем данные местами
+                swapped = true;
+            }
+            curr = curr->next;
+        }
+        end = curr;                           // Сдвигаем конец
+    } while (swapped);
+}
+
+// Основная функция
+int main() {
+    Node* dummy = new Node();                 // Создаем фиктивный узел
+    int num;
+
+    cout << "Введите числа (0 для окончания ввода):\n";
+    while (cin >> num && num > 0)             // Ввод чисел до 0 или отрицательного
+        addNode(dummy, num);
+
+    bool isIncreasing;
+    bool ordered = checkOrder(dummy, isIncreasing);
+
+    if (ordered) processOrderedList(dummy);   // Обработка упорядоченного списка
+    else bubbleSort(dummy);                   // Сортировка если не упорядочен
+
+    cout << "Результат:\n";
+    Node* curr = dummy->next;
+    while (curr != dummy) {                   // Вывод элементов списка
+        cout << curr->data << ' ';
+        curr = curr->next;
+    }
+
+    // Освобождение памяти
+    while (dummy->next != dummy) {            // Удаление всех узлов
+        Node* temp = dummy->next;
+        dummy->next = temp->next;
+        delete temp;
+    }
+    delete dummy;                             // Удаление фиктивного узла
+
+    return 0;
+}
