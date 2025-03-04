@@ -1,3 +1,4 @@
+# Задача 1
 def psychological_test():
     print("Психологический тест: Склонность к риску или осторожности")
     
@@ -47,3 +48,35 @@ def psychological_test():
 
 # Запускаем тест
 psychological_test()
+
+
+
+# Задача 2
+s = randint(20, 30)
+
+print("Начальное количество камней:", s)
+
+while s >= 0:
+    a = randint(1, 5)
+    b = randint(-5, -1)
+    print("Выберите один из двух ходов:")
+    print("A:", a)
+    print("B:", b)
+    # Пользователь вводит букву A или B (латинскую)
+    answer = input()
+    if answer == "A":
+        s += a
+        print("S =", s)
+    elif answer == "B":
+        if s+b > 0:
+            s+=b
+            print("------------------------")
+            print("S =", s)
+        else:
+            print("Победа")
+            break
+    elif answer == "X":
+        break
+    else:
+        print("Неверный ввод")
+        sys.exit(0)
