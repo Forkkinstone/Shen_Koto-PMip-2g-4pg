@@ -80,3 +80,86 @@ while s >= 0:
     else:
         print("Неверный ввод")
         sys.exit(0)
+
+
+Задача #3
+import math
+
+class Vector:
+    def __init__(self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
+
+    # Сложение векторов
+    def __add__(self, other):
+        return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    # Вычитание векторов
+    def __sub__(self, other):
+        return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
+
+    # Скалярное умножение (вектор * вектор или вектор * число)
+    def __mul__(self, other):
+        if isinstance(other, Vector):  # Скалярное произведение
+            return self.x * other.x + self.y * other.y + self.z * other.z
+        elif isinstance(other, (int, float)):  # Умножение на число
+            return Vector(self.x * other, self.y * other, self.z * other)
+        else:
+            raise TypeError("Unsupported operand type for *")
+
+    # Унарный минус
+    def __neg__(self):
+        return Vector(-self.x, -self.y, -self.z)
+
+    # Векторное произведение
+    def cross(self, other):
+        cx = self.y * other.z - self.z * other.y
+        cy = self.z * other.x - self.x * other.z
+        cz = self.x * other.y - self.y * other.x
+        return Vector(cx, cy, cz)
+
+    # Чтение и изменение координат через квадратные скобки
+    def __getitem__(self, index):
+        if index == 0:
+            return self.x
+        elif index == 1:
+            return self.y
+        elif index == 2:
+            return self.z
+        else:
+            raise IndexError("Index out of range")
+
+    def __setitem__(self, index, value):
+        if index == 0:
+            self.x = value
+        elif index == 1:
+            self.y = value
+        elif index == 2:
+            self.z = value
+        else:
+            raise IndexError("Index out of range")
+
+    # Длина вектора (через abs)
+    def __abs__(self):
+        return math.sqrt(self.x**2 + self.y**2 + self.z**2)
+
+    # Печать вектора (через str)
+    def __str__(self):
+        return f"Vector({self.x}, {self.y}, {self.z})"
+
+
+# Пример использования
+v1 = Vector(1, 2, 3)
+v2 = Vector(4, 5, 6)
+
+print("Сложение:", v1 + v2)
+print("Вычитание:", v1 - v2)
+print("Скалярное умножение:", v1 * v2)
+print("Умножение на число:", v1 * 3)
+print("Унарный минус:", -v1)
+print("Векторное произведение:", v1.cross(v2))
+print("Длина вектора v1:", abs(v1))
+
+v1[0] = 10  # Изменение координаты x
+print("Измененный вектор v1:", v1)
