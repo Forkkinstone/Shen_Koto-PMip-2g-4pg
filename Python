@@ -83,24 +83,25 @@ while s >= 0:
 
 
 Задача #3
+Python
 import math
 
 class Vector:
-    def __init__(self, x, y, z):
+    def init(self, x, y, z):
         self.x = x
         self.y = y
         self.z = z
 
     # Сложение векторов
-    def __add__(self, other):
+    def add(self, other):
         return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
 
     # Вычитание векторов
-    def __sub__(self, other):
+    def sub(self, other):
         return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
 
     # Скалярное умножение (вектор * вектор или вектор * число)
-    def __mul__(self, other):
+    def mul(self, other):
         if isinstance(other, Vector):  # Скалярное произведение
             return self.x * other.x + self.y * other.y + self.z * other.z
         elif isinstance(other, (int, float)):  # Умножение на число
@@ -109,7 +110,7 @@ class Vector:
             raise TypeError("Unsupported operand type for *")
 
     # Унарный минус
-    def __neg__(self):
+    def neg(self):
         return Vector(-self.x, -self.y, -self.z)
 
     # Векторное произведение
@@ -120,7 +121,7 @@ class Vector:
         return Vector(cx, cy, cz)
 
     # Чтение и изменение координат через квадратные скобки
-    def __getitem__(self, index):
+    def getitem(self, index):
         if index == 0:
             return self.x
         elif index == 1:
@@ -130,7 +131,7 @@ class Vector:
         else:
             raise IndexError("Index out of range")
 
-    def __setitem__(self, index, value):
+    def setitem(self, index, value):
         if index == 0:
             self.x = value
         elif index == 1:
@@ -141,17 +142,25 @@ class Vector:
             raise IndexError("Index out of range")
 
     # Длина вектора (через abs)
-    def __abs__(self):
-        return math.sqrt(self.x**2 + self.y**2 + self.z**2)
+    def abs(self):
+        return math.sqrt(self.x2 + self.y2 + self.z**2)
 
     # Печать вектора (через str)
-    def __str__(self):
+    def str(self):
         return f"Vector({self.x}, {self.y}, {self.z})"
 
+def get_vector_input(prompt):
+    """Получает координаты вектора от пользователя."""
+    while True:
+        try:
+            x, y, z = map(float, input(prompt).split())
+            return Vector(x, y, z)
+        except ValueError:
+            print("Некорректный ввод. Пожалуйста, введите три числа через пробел.")
 
-# Пример использования
-v1 = Vector(1, 2, 3)
-v2 = Vector(4, 5, 6)
+# Пример использования с пользовательским вводом
+v1 = get_vector_input("Введите координаты первого вектора (x y z): ")
+v2 = get_vector_input("Введите координаты второго вектора (x y z): ")
 
 print("Сложение:", v1 + v2)
 print("Вычитание:", v1 - v2)
