@@ -106,3 +106,269 @@ int main() {
 return 0;
 
 }
+
+Новый 
+#include <iostream>
+#include <vector>
+#include <stdexcept> // For std::out_of_range
+
+class MyVector {
+    int* m_arr;
+    size_t m_size;
+    size_t m_cap;
+
+public:
+
+    MyVector() {
+        m_size = 0;
+        m_cap = 0;
+        m_arr = nullptr;
+    }
+
+    MyVector(size_t size, int value) {
+        m_arr = new int[size];
+        m_cap = size;
+        m_size = size;
+        for (size_t i=0; i < m_size; ++i) {
+            m_arr[i] = value;
+        }
+    }
+
+    // 2. Конструктор копирования
+    MyVector(const MyVector& other) : m_size(other.m_size), m_cap(other.m_cap) {
+        m_arr = new int[m_cap];
+        for (size_t i = 0; i < m_size; ++i) {
+            m_arr[i] = other.m_arr[i];
+        }
+    }
+
+    // 3. Оператор присваивания копированием
+    MyVector& operator=(const MyVector& other) {
+        if (this == &other) {
+            return *this;
+        }
+        delete[] m_arr;
+        m_size = other.m_size;
+        m_cap = other.m_cap;
+        m_arr = new int[m_cap];
+        for (size_t i = 0; i < m_size; ++i) {
+            m_arr[i] = other.m_arr[i];
+        }
+        return *this;
+    }
+
+    ~MyVector() {
+        if(m_arr != nullptr)
+            delete[] m_arr;
+    }
+
+    void resize(size_t newSize) {
+        if (newSize > m_cap) {
+            reserve(newSize);
+        }
+        m_size = newSize;
+    }
+
+    void reserve(size_t cap){
+        if(cap <= m_cap)
+            return;
+        int* tmp = new int[cap];
+        for(size_t i=0; i<m_size; ++i)
+            tmp[i] = m_arr[i];
+        delete[] m_arr;
+        m_arr = tmp;
+        m_cap = cap;
+    }
+
+    void shrink_to_fit() {
+        if (m_size < m_cap) {
+            m_cap = m_size;
+            int* tmp = new int[m_cap];
+            for(size_t i=0; i<m_size; ++i)
+                tmp[i] = m_arr[i];
+            delete[] m_arr;
+            m_arr = tmp;
+        }
+    }
+
+    int& front() {
+        if (empty()) {
+            throw std::out_of_range("Vector is empty");
+        }
+        return m_arr[0];
+    }
+
+    const int& front() const {
+        if (empty()) {
+            throw std::out_of_range("Vector is empty");
+        }
+        return m_arr[0];
+    }
+
+    int& back() {
+        if (empty()) {
+            throw std::out_of_range("Vector is empty");
+        }
+        return m_arr[m_size - 1];
+    }
+
+    const int& back() const {
+        if (empty()) {
+            throw std::out_of_range("Vector is empty");
+        }
+        return m_arr[m_size - 1];
+    }
+
+    bool empty() const {
+        return m_size == 0;
+    }
+
+    size_t size() const {
+        return m_size;
+    }
+
+    size_t capacity() const {
+        return m_cap;
+    }
+
+    void push_back(int value) {
+        if(m_size + 1 > m_cap){
+            size_t new_cap = (m_cap == 0) ? 1 : m_cap * 2;
+            int* tmp = new int[new_cap];
+            for(size_t i=0; i<m_size; ++i)
+                tmp[i] = m_arr[i];
+            delete[] m_arr;
+            m_arr = tmp;
+            m_cap = new_cap;
+        }
+        m_arr[m_size++] = value;
+    }
+
+    void insert(size_t index, int value) {
+        if (index > m_size) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        if (m_size + 1 > m_cap) {
+            size_t new_cap = (m_cap == 0) ? 1 : m_cap * 2;
+            int* tmp = new int[new_cap];
+            for (size_t i = 0; i < index; ++i) {
+                tmp[i] = m_arr[i];
+            }
+            tmp[index] = value;
+            for (size_t i = index; i < m_size; ++i) {
+                tmp[i + 1] = m_arr[i];
+            }
+            delete[] m_arr;
+            m_arr = tmp;
+            m_cap = new_cap;
+            m_size++;
+        } else {
+            for (size_t i = m_size; i > index; --i) {
+                m_arr[i] = m_arr[i - 1];
+            }
+            m_arr[index] = value;
+            m_size++;
+        }
+    }
+
+    void erase(size_t index) {
+        if (index >= m_size) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        for (size_t i = index; i < m_size - 1; ++i) {
+            m_arr[i] = m_arr[i + 1];
+        }
+        m_size--;
+    }
+
+    int& operator[](size_t index) {
+        return m_arr[index];
+    }
+
+    const int& operator[](size_t index) const {
+        return m_arr[index];
+    }
+
+    int& at(size_t index) {
+        if (index >= m_size) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        return m_arr[index];
+    }
+
+    const int& at(size_t index) const {
+        if (index >= m_size) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        return m_arr[index];
+    }
+};
+
+int main() {
+    MyVector mas;
+    mas.reserve(2000);
+    for(int i=0; i<100; ++i) {
+        mas.push_back(i);
+        std::cout << "Allocate " << mas.size() << " " << mas.capacity() << std::endl;
+    }
+
+    mas.shrink_to_fit();
+    std::cout << "Allocate " << mas.size() << " " << mas.capacity() << std::endl;
+
+    std::cout << mas[10] << std::endl;
+    mas[10] = 2;
+    std::cout << mas[10] << std::endl;
+
+    MyVector mas2 = mas; // Test copy constructor
+    std::cout << "mas2[0]: " << mas2[0] << std::endl;
+    mas2[0] = 99;
+    std::cout << "mas[0]: " << mas[0] << std::endl; // Should be different from mas2
+
+    MyVector mas3;
+    mas3 = mas; // Test assignment operator
+    std::cout << "mas3.size(): " << mas3.size() << std::endl;
+    std::cout << "mas3[5]: " << mas3[5] << std::endl;
+
+    std::cout << "front of mas: " << mas.front() << std::endl;
+    std::cout << "back of mas: " << mas.back() << std::endl;
+    std::cout << "is mas empty? " << mas.empty() << std::endl;
+
+    mas.insert(5, 123);
+    std::cout << "mas[5] after insert: " << mas[5] << std::endl;
+    std::cout << "size of mas after insert: " << mas.size() << std::endl;
+
+    mas.erase(10);
+    std::cout << "mas[10] after erase: " << mas[10] << std::endl;
+    std::cout << "size of mas after erase: " << mas.size() << std::endl;
+
+    try {
+        std::cout << "mas.at(15): " << mas.at(15) << std::endl;
+        std::cout << "mas.at(200): " << mas.at(200) << std::endl; // This should throw
+    } catch (const std::out_of_range& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+    MyVector mas4(5, 55);
+    std::cout << "mas4 size: " << mas4.size() << ", capacity: " << mas4.capacity() << std::endl;
+    for (size_t i = 0; i < mas4.size(); ++i) {
+        std::cout << mas4[i] << " ";
+    }
+    std::cout << std::endl;
+
+    mas4.resize(3);
+    std::cout << "mas4 size after resize(3): " << mas4.size() << ", capacity: " << mas4.capacity() << std::endl;
+    for (size_t i = 0; i < mas4.size(); ++i) {
+        std::cout << mas4[i] << " ";
+    }
+    std::cout << std::endl;
+
+    mas4.resize(7, 99);
+    std::cout << "mas4 size after resize(7, 99): " << mas4.size() << ", capacity: " << mas4.capacity() << std::endl;
+    for (size_t i = 0; i < mas4.size(); ++i) {
+        std::cout << mas4[i] << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+
