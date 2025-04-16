@@ -1,1 +1,276 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <Windows.h>
 
+/*
+Лабораторная работа №4 "Длинная арифметика"
+
+UPD:
+Задание разделяется на 2 части.
+Реализовать BigInt для неотрицательных чисел.
+Добавить поддержку для отрицательных чисел (дополнительно).
+
+Реализуйте класс BigInt для работы со большими целыми числами (количество цифр в числе не превосходит 1000).
+
+У вас должны быть реализованы:
+1.  Базовый конструктор
+2.  Конструктор копирования (если необходим)
+3.  Оператор присваивания копированием (если необходим)
+4.  Деструктор (если необходим)
+5.  Операторы + и +=
+6.  Операторы * и *=
+7.  Операторы <, >, ==, !=
+8.  Операторы ввода и вывода в поток
+
+Продемонстрируйте работу вашего класса. Будьте готовы объяснить написанное.
+
+*/
+
+class BigInt {
+private:
+    std::vector<int> digits; // Хранит цифры числа в обратном порядке
+    bool isNegative; // Знак числа
+
+public:
+    // Базовый конструктор
+    BigInt(const std::string& number = "0") : isNegative(false) {
+        if (number.empty()) {
+            throw std::invalid_argument("Invalid number");
+        }
+
+        size_t start = 0;
+        if (number[0] == '-') {
+            isNegative = true;
+            start = 1;
+        } else if (number[0] == '+') {
+            start = 1;
+        }
+
+        for (size_t i = start; i < number.length(); ++i) {
+            if (isdigit(number[i])) {
+                digits.push_back(number[i] - '0');
+            } else {
+                throw std::invalid_argument("Invalid character in number");
+            }
+        }
+        std::reverse(digits.begin(), digits.end()); // Обратный порядок
+    }
+
+    // Конструктор копирования
+    BigInt(const BigInt& other) : digits(other.digits), isNegative(other.isNegative) {}
+
+    // Оператор присваивания копированием
+    BigInt& operator=(const BigInt& other) {
+        if (this != &other) {
+            digits = other.digits;
+            isNegative = other.isNegative;
+        }
+        return *this;
+    }
+
+    // Операторы + и +=
+    BigInt operator+(const BigInt& other) const {
+        if (isNegative && other.isNegative) {
+            // (-a) + (-b) = -(a + b)
+            BigInt result = addAbs(other);
+            result.isNegative = true;
+            return result;
+        } else if (!isNegative && !other.isNegative) {
+            // a + b
+            return addAbs(other);
+        } else if (isNegative && !other.isNegative) {
+            // (-a) + b = b - a
+            return other - abs();
+        } else {
+            // a + (-b) = a - b
+            return *this - other.abs();
+        }
+    }
+
+    BigInt& operator+=(const BigInt& other) {
+        *this = *this + other;
+        return *this;
+    }
+
+    // Оператор -
+    BigInt operator-(const BigInt& other) const {
+        if (isNegative && other.isNegative) {
+            // (-a) - (-b) = b - a
+            return other.abs() - abs();
+        } else if (!isNegative && !other.isNegative) {
+            // a - b
+            return subtractAbs(other);
+        } else if (isNegative && !other.isNegative) {
+            // (-a) - b = -(a + b)
+            BigInt result = addAbs(other);
+            result.isNegative = true;
+            return result;
+        } else {
+            // a - (-b) = a + b
+            return *this + other.abs();
+        }
+    }
+
+    // Вспомогательный метод для вычитания абсолютных значений
+    BigInt subtractAbs(const BigInt& other) const {
+        BigInt result;
+        int borrow = 0;
+
+        for (size_t i = 0; i < digits.size(); ++i) {
+            int subtrahend = (i < other.digits.size()) ? other.digits[i] : 0;
+            int diff = digits[i] - subtrahend - borrow;
+
+            if (diff < 0) {
+                diff += 10;
+                borrow = 1;
+            } else {
+                borrow = 0;
+            }
+
+            result.digits.push_back(diff);
+        }
+
+        // Удаляем ведущие нули
+        while (result.digits.size() > 1 && result.digits.back() == 0) {
+            result.digits.pop_back();
+        }
+
+
+        // Если результат отрицательный, устанавливаем знак
+        if (borrow > 0) {
+            // Если результат отрицательный, то возвращаем его как отрицательное значение
+            result.isNegative = true; 
+        } else {
+            result.isNegative = false;
+        }
+
+        return result;
+    }
+
+    // Операторы * и *=
+    BigInt operator*(const BigInt& other) const {
+        BigInt result = multiplyAbs(other);
+        result.isNegative = (isNegative != other.isNegative); // Знак результата
+        return result;
+    }
+
+    BigInt& operator*=(const BigInt& other) {
+        *this = *this * other;
+        return *this;
+    }
+
+    // Операторы <, >, ==, !=
+    bool operator<(const BigInt& other) const {
+        if (isNegative != other.isNegative) {
+            return isNegative; // Если один отрицательный, а другой положительный
+        }
+        if (digits.size() != other.digits.size()) {
+            return (digits.size() < other.digits.size()) ^ isNegative; // Учитываем знак
+        }
+        for (size_t i = digits.size(); i-- > 0;) {
+            if (digits[i] != other.digits[i]) {
+                return (digits[i] < other.digits[i]) ^ isNegative; // Учитываем знак
+            }
+        }
+        return false;
+    }
+
+    bool operator>(const BigInt& other) const {
+        return other < *this;
+    }
+
+    bool operator==(const BigInt& other) const {
+        return isNegative == other.isNegative && digits == other.digits;
+    }
+
+    bool operator!=(const BigInt& other) const {
+        return !(*this == other);
+    }
+
+    // Операторы ввода и вывода в поток
+    friend std::ostream& operator<<(std::ostream& os, const BigInt& bigInt) {
+        if (bigInt.isNegative) {
+            os << '-';
+        }
+        for (size_t i = bigInt.digits.size(); i-- > 0;) {
+            os << bigInt.digits[i];
+        }
+        return os;
+    }
+
+    friend std::istream& operator>>(std::istream& is, BigInt& bigInt) {
+        std::string input;
+        is >> input;
+        bigInt = BigInt(input);
+        return is;
+    }
+
+private:
+    // Вспомогательные методы
+    BigInt addAbs(const BigInt& other) const {
+        BigInt result;
+        int carry = 0;
+        size_t maxLength = std::max<size_t>(digits.size(), other.digits.size());
+
+        for (size_t i = 0; i < maxLength || carry; ++i) {
+            if (i == result.digits.size()) {
+                result.digits.push_back(0);
+            }
+            if (i < digits.size()) {
+                result.digits[i] += digits[i];
+            }
+            if (i < other.digits.size()) {
+                result.digits[i] += other.digits[i];
+            }
+            result.digits[i] += carry;
+            carry = result.digits[i] / 10;
+            result.digits[i] %= 10;
+        }
+        return result;
+    }
+
+    BigInt multiplyAbs(const BigInt& other) const {
+        BigInt result;
+        result.digits.resize(digits.size() + other.digits.size(), 0);
+
+        for (size_t i = 0; i < digits.size(); ++i) {
+            for (size_t j = 0; j < other.digits.size(); ++j) {
+                result.digits[i + j] += digits[i] * other.digits[j];
+                result.digits[i + j + 1] += result.digits[i + j] / 10;
+                result.digits[i + j] %= 10;
+            }
+        }
+
+        // Удаляем ведущие нули
+        while (result.digits.size() > 1 && result.digits.back() == 0) {
+            result.digits.pop_back();
+        }
+
+        return result;
+    }
+
+    BigInt abs() const {
+        BigInt result = *this;
+        result.isNegative = false;
+        return result;
+    }
+};
+
+// Пример использования
+int main() {
+    SetConsoleOutputCP(CP_UTF8);
+
+    BigInt a("-123456789012345678901234567890");
+    BigInt b("987654321098765432109876543210");
+    BigInt c = a + b;
+    BigInt d = a * b;
+    BigInt e = a - b;
+
+    std::cout << "Сумма: " << c << std::endl;
+    std::cout << "Произведение: " << d << std::endl;
+    std::cout << "Разность: " << e << std::endl;
+
+    return 0;
+}
