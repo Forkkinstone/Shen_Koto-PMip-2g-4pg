@@ -362,7 +362,7 @@ int main() {
     }
     std::cout << std::endl;
 
-    mas4.resize(7, 99);
+    mas4.resize(7);
     std::cout << "mas4 size after resize(7, 99): " << mas4.size() << ", capacity: " << mas4.capacity() << std::endl;
     for (size_t i = 0; i < mas4.size(); ++i) {
         std::cout << mas4[i] << " ";
