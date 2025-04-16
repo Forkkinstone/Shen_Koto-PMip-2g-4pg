@@ -1,0 +1,373 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <stdexcept> // Для обработки исключений
+
+class BigInt {
+private:
+    std::vector<int> digits; // Вектор для хранения цифр числа (от младшего к старшему)
+    bool isNegative;         // Флаг, указывающий, является ли число отрицательным
+
+public:
+    // 1. Базовый конструктор (конструктор по умолчанию)
+    BigInt() : isNegative(false) {}
+
+    // Конструктор из целого числа (int)
+    BigInt(int num) : isNegative(num < 0) {
+        if (num == 0) {
+            digits.push_back(0);
+        } else {
+            num = std::abs(num);
+            while (num > 0) {
+                digits.push_back(num % 10);
+                num /= 10;
+            }
+        }
+    }
+
+    // Конструктор из строки
+    BigInt(std::string numStr) {
+        isNegative = (numStr[0] == '-');
+        if (isNegative) {
+            numStr = numStr.substr(1); // Убираем знак минуса
+        }
+        if (numStr.empty()) {
+            digits.push_back(0);
+            isNegative = false; // Пустая строка представляет 0
+            return;
+        }
+        for (int i = numStr.length() - 1; i >= 0; --i) {
+            if (!isdigit(numStr[i])) {
+                throw std::invalid_argument("Invalid character in BigInt string");
+            }
+            digits.push_back(numStr[i] - '0');
+        }
+        // Удаляем лидирующие нули (кроме случая, когда число равно 0)
+        while (digits.size() > 1 && digits.back() == 0) {
+            digits.pop_back();
+        }
+        if (digits.size() == 1 && digits[0] == 0) {
+            isNegative = false; // 0 не может быть отрицательным
+        }
+    }
+
+    // 2. Конструктор копирования
+    BigInt(const BigInt& other) : digits(other.digits), isNegative(other.isNegative) {}
+
+    // 4. Деструктор (в данном случае не требуется явный деструктор, так как нет динамически выделенной памяти)
+    ~BigInt() {}
+
+    // Метод для сравнения абсолютных значений двух BigInt
+    bool isAbsGreater(const BigInt& other) const {
+        if (digits.size() > other.digits.size()) {
+            return true;
+        }
+        if (digits.size() < other.digits.size()) {
+            return false;
+        }
+        for (size_t i = digits.size(); i > 0; --i) {
+            if (digits[i - 1] > other.digits[i - 1]) {
+                return true;
+            }
+            if (digits[i - 1] < other.digits[i - 1]) {
+                return false;
+            }
+        }
+        return false; // Абсолютные значения равны
+    }
+
+    // Метод для сравнения абсолютных значений двух BigInt на равенство
+    bool isAbsEqual(const BigInt& other) const {
+        if (digits.size() != other.digits.size()) {
+            return false;
+        }
+        for (size_t i = 0; i < digits.size(); ++i) {
+            if (digits[i] != other.digits[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // 5. Оператор присваивания копированием
+    BigInt& operator=(const BigInt& other) {
+        if (this != &other) {
+            digits = other.digits;
+            isNegative = other.isNegative;
+        }
+        return *this;
+    }
+
+    // Вспомогательная функция для сложения двух неотрицательных BigInt
+    static BigInt addPositive(const BigInt& a, const BigInt& b) {
+        BigInt result;
+        int carry = 0;
+        size_t i = 0, j = 0;
+        while (i < a.digits.size() || j < b.digits.size() || carry) {
+            int sum = carry;
+            if (i < a.digits.size()) {
+                sum += a.digits[i++];
+            }
+            if (j < b.digits.size()) {
+                sum += b.digits[j++];
+            }
+            result.digits.push_back(sum % 10);
+            carry = sum / 10;
+        }
+        std::reverse(result.digits.begin(), result.digits.end());
+        return result;
+    }
+
+    // Вспомогательная функция для вычитания двух неотрицательных BigInt (предполагается, что a >= b)
+    static BigInt subtractPositive(const BigInt& a, const BigInt& b) {
+        BigInt result;
+        int borrow = 0;
+        for (size_t i = 0; i < a.digits.size(); ++i) {
+            int diff = a.digits[i] - borrow;
+            if (i < b.digits.size()) {
+                diff -= b.digits[i];
+            }
+            if (diff < 0) {
+                diff += 10;
+                borrow = 1;
+            } else {
+                borrow = 0;
+            }
+            result.digits.push_back(diff);
+        }
+        // Удаляем лидирующие нули
+        while (result.digits.size() > 1 && result.digits.back() == 0) {
+            result.digits.pop_back();
+        }
+        std::reverse(result.digits.begin(), result.digits.end());
+        return result;
+    }
+
+    // 5. Оператор +
+    BigInt operator+(const BigInt& other) const {
+        if (isNegative == other.isNegative) {
+            BigInt result = addPositive(*this, other);
+            result.isNegative = isNegative;
+            return result;
+        } else {
+            if (isAbsGreater(other)) {
+                BigInt result = subtractPositive(*this, other);
+                result.isNegative = isNegative;
+                return result;
+            } else {
+                BigInt result = subtractPositive(other, *this);
+                result.isNegative = other.isNegative;
+                return result;
+            }
+        }
+    }
+
+    // 5. Оператор +=
+    BigInt& operator+=(const BigInt& other) {
+        *this = *this + other;
+        return *this;
+    }
+
+    // 6. Оператор *
+    BigInt operator*(const BigInt& other) const {
+        BigInt result;
+        result.digits.assign(digits.size() + other.digits.size(), 0);
+        for (size_t i = 0; i < digits.size(); ++i) {
+            int carry = 0;
+            for (size_t j = 0; j < other.digits.size() || carry; ++j) {
+                int product = digits[i] * (j < other.digits.size() ? other.digits[j] : 0) + result.digits[i + j] + carry;
+                result.digits[i + j] = product % 10;
+                carry = product / 10;
+            }
+        }
+        // Удаляем лидирующие нули
+        while (result.digits.size() > 1 && result.digits.back() == 0) {
+            result.digits.pop_back();
+        }
+        if (result.digits.size() == 1 && result.digits[0] == 0) {
+            result.isNegative = false;
+        } else {
+            result.isNegative = (isNegative != other.isNegative);
+        }
+        std::reverse(result.digits.begin(), result.digits.end());
+        return result;
+    }
+
+    // 6. Оператор *=
+    BigInt& operator*=(const BigInt& other) {
+        *this = *this * other;
+        return *this;
+    }
+
+    // 7. Операторы сравнения
+    bool operator<(const BigInt& other) const {
+        if (isNegative != other.isNegative) {
+            return isNegative; // Отрицательное < положительного
+        }
+        if (isNegative) { // Оба отрицательные, сравниваем абсолютные значения в обратном порядке
+            return isAbsGreater(other);
+        } else { // Оба положительные
+            return !isAbsGreater(other) && !isAbsEqual(other);
+        }
+    }
+
+    bool operator>(const BigInt& other) const {
+        return !(*this < other) && !(*this == other);
+    }
+
+    bool operator<=(const BigInt& other) const {
+        return (*this < other) || (*this == other);
+    }
+
+    bool operator>=(const BigInt& other) const {
+        return (*this > other) || (*this == other);
+    }
+
+    bool operator==(const BigInt& other) const {
+        return isNegative == other.isNegative && isAbsEqual(other);
+    }
+
+    bool operator!=(const BigInt& other) const {
+        return !(*this == other);
+    }
+
+    // 8. Операторы ввода и вывода в поток
+    friend std::ostream& operator<<(std::ostream& os, const BigInt& num) {
+        if (num.isNegative && !(num.digits.size() == 1 && num.digits[0] == 0)) {
+            os << '-';
+        }
+        for (size_t i = num.digits.size(); i > 0; --i) {
+            os << num.digits[i - 1];
+        }
+        return os;
+    }
+
+    friend std::istream& operator>>(std::istream& is, BigInt& num) {
+        std::string s;
+        is >> s;
+        try {
+            num = BigInt(s);
+        } catch (const std::invalid_argument& e) {
+            is.setstate(std::ios::failbit); // Устанавливаем флаг ошибки ввода
+        }
+        return is;
+    }
+};
+
+int main() {
+    // Демонстрация работы класса BigInt
+    BigInt a("12345678901234567890");
+    BigInt b("98765432109876543210");
+    BigInt c = a + b;
+    std::cout << "a = " << a << std::endl;
+    std::cout << "b = " << b << std::endl;
+    std::cout << "a + b = " << c << std::endl;
+
+    BigInt d = a * BigInt(100);
+    std::cout << "a * 100 = " << d << std::endl;
+
+    BigInt e(-50);
+    BigInt f(100);
+    std::cout << "e = " << e << ", f = " << f << std::endl;
+    std::cout << "e + f = " << (e + f) << std::endl;
+    std::cout << "e * f = " << (e * f) << std::endl;
+
+    if (a > b) {
+        std::cout << "a > b is true" << std::endl;
+    } else {
+        std::cout << "a > b is false" << std::endl;
+    }
+
+    BigInt inputNum;
+    std::cout << "Введите большое целое число: ";
+    std::cin >> inputNum;
+    if (std::cin.good()) {
+        std::cout << "Вы ввели: " << inputNum << std::endl;
+    } else {
+        std::cerr << "Ошибка ввода!" << std::endl;
+    }
+
+    return 0;
+}
+
+/*
+Объяснение каждой строки кода:
+
+#include <iostream>
+ - Подключает библиотеку для ввода и вывода (например, std::cout, std::cin).
+
+#include <string>
+ - Подключает библиотеку для работы со строками (например, std::string).
+
+#include <vector>
+ - Подключает библиотеку для работы с динамическими массивами (например, std::vector).
+
+#include <algorithm>
+ - Подключает библиотеку с различными алгоритмами, включая std::reverse.
+
+#include <stdexcept>
+ - Подключает библиотеку для обработки стандартных исключений, таких как std::invalid_argument.
+
+class BigInt { ... };
+ - Объявляет класс с именем BigInt, который будет представлять большие целые числа.
+
+private:
+    std::vector<int> digits;
+     - Объявляет приватный член данных digits, который является вектором целых чисел.
+     - Этот вектор будет хранить цифры большого числа. Каждая цифра хранится как отдельный элемент вектора.
+     - Цифры хранятся в обратном порядке: младший разряд (единицы) находится в начале вектора, а старший разряд - в конце.
+    bool isNegative;
+     - Объявляет приватный член данных isNegative, который является булевой переменной.
+     - Она используется для хранения знака числа: true, если число отрицательное, и false, если положительное или ноль.
+
+public:
+    // 1. Базовый конструктор (конструктор по умолчанию)
+    BigInt() : isNegative(false) {}
+     - Определяет конструктор по умолчанию для класса BigInt.
+     - При создании объекта BigInt без аргументов, вызывается этот конструктор.
+     - Он инициализирует член isNegative значением false (по умолчанию число считается неотрицательным).
+     - Член digits остается пустым до присваивания значения.
+
+    // Конструктор из целого числа (int)
+    BigInt(int num) : isNegative(num < 0) { ... }
+     - Определяет конструктор, который принимает целое число (int) в качестве аргумента.
+     - Инициализирует isNegative в зависимости от знака num (true, если num < 0, false в противном случае).
+     - Если num равно 0, в вектор digits добавляется один элемент со значением 0.
+     - Если num не равно 0, берется его абсолютное значение (std::abs(num)).
+     - Затем в цикле while цифры числа извлекаются с помощью оператора % (остаток от деления на 10) и добавляются в вектор digits.
+     - После каждой итерации num делится на 10, чтобы перейти к следующей цифре.
+     - Цифры добавляются в вектор в обратном порядке.
+
+    // Конструктор из строки
+    BigInt(std::string numStr) { ... }
+     - Определяет конструктор, который принимает строку (std::string) в качестве аргумента.
+     - Проверяет первый символ строки: если это '-', устанавливает isNegative в true и удаляет '-' из строки с помощью numStr.substr(1).
+     - Если строка пустая, добавляет в digits 0 и устанавливает isNegative в false.
+     - В цикле for проходит по строке с конца до начала.
+     - Для каждого символа проверяет, является ли он цифрой с помощью isdigit(). Если нет, выбрасывает исключение std::invalid_argument.
+     - Если символ является цифрой, он преобразуется в целое число (numStr[i] - '0') и добавляется в вектор digits.
+     - После обработки строки удаляются лидирующие нули из вектора digits (кроме случая, когда число равно 0).
+     - Если после удаления лидирующих нулей в векторе остался только один элемент, равный 0, isNegative устанавливается в false.
+
+    // 2. Конструктор копирования
+    BigInt(const BigInt& other) : digits(other.digits), isNegative(other.isNegative) {}
+     - Определяет конструктор копирования.
+     - При создании нового объекта BigInt из существующего объекта BigInt, вызывается этот конструктор.
+     - Он создает новую копию вектора digits и булевой переменной isNegative из объекта other.
+
+    // 4. Деструктор (в данном случае не требуется явный деструктор, так как нет динамически выделенной памяти)
+    ~BigInt() {}
+     - Определяет деструктор класса BigInt.
+     - В данном случае он пустой, так как класс не управляет никакой динамически выделенной памятью, которую нужно было бы освобождать.
+
+    // Метод для сравнения абсолютных значений двух BigInt
+    bool isAbsGreater(const BigInt& other) const { ... }
+     - Определяет приватный метод isAbsGreater, который сравнивает абсолютные значения двух объектов BigInt.
+     - Сначала сравнивает размеры векторов digits. Если размеры разные, большее число имеет больший абсолютное значение.
+     - Если размеры одинаковые, сравнивает цифры, начиная со старшего разряда (с конца вектора).
+     - Возвращает true, если абсолютное значение текущего объекта больше абсолютного значения other, и false в противном случае.
+
+    // Метод для сравнения абсолютных значений двух BigInt на равенство
+    bool isAbsEqual(const BigInt& other) const { ... }
+     - Определяет приватный метод isAbsEqual, который проверяет равенство абсолютных значений двух объектов Big
