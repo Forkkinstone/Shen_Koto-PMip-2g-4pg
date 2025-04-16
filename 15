@@ -103,3 +103,246 @@ int main() {
 return 0;
 
 }
+
+
+
+новый 
+
+#include <iostream>
+#include <stdexcept> // Для обработки исключений
+
+class MyVector {
+private:
+    int* m_arr;
+    size_t m_size;
+    size_t m_cap;
+
+public:
+    // 1. Базовый конструктор
+    MyVector() : m_arr(nullptr), m_size(0), m_cap(0) {}
+
+    // 2. Конструктор копирования
+    MyVector(const MyVector& other) : m_size(other.m_size), m_cap(other.m_cap) {
+        m_arr = new int[m_cap];
+        for (size_t i = 0; i < m_size; ++i) {
+            m_arr[i] = other.m_arr[i];
+        }
+    }
+
+    // Конструктор с размером и значением
+    MyVector(size_t size, int value = 0) : m_size(size), m_cap(size) {
+        m_arr = new int[m_cap];
+        for (size_t i = 0; i < m_size; ++i) {
+            m_arr[i] = value;
+        }
+    }
+
+    // 3. Оператор присваивания копированием
+    MyVector& operator=(const MyVector& other) {
+        if (this == &other) {
+            return *this;
+        }
+        delete[] m_arr;
+        m_size = other.m_size;
+        m_cap = other.m_cap;
+        m_arr = new int[m_cap];
+        for (size_t i = 0; i < m_size; ++i) {
+            m_arr[i] = other.m_arr[i];
+        }
+        return *this;
+    }
+
+    // 4. Деструктор
+    ~MyVector() {
+        delete[] m_arr;
+    }
+
+    // 5. Методы:
+    // a. resize
+    void resize(size_t newSize) {
+        if (newSize > m_cap) {
+            reserve(newSize);
+        }
+        m_size = newSize;
+    }
+
+    // b. reserve
+    void reserve(size_t newCap) {
+        if (newCap > m_cap) {
+            int* temp = new int[newCap];
+            for (size_t i = 0; i < m_size; ++i) {
+                temp[i] = m_arr[i];
+            }
+            delete[] m_arr;
+            m_arr = temp;
+            m_cap = newCap;
+        }
+    }
+
+    // c. shrink_to_fit
+    void shrink_to_fit() {
+        if (m_size < m_cap) {
+            int* temp = new int[m_size];
+            for (size_t i = 0; i < m_size; ++i) {
+                temp[i] = m_arr[i];
+            }
+            delete[] m_arr;
+            m_arr = temp;
+            m_cap = m_size;
+        }
+    }
+
+    // d. front
+    int& front() {
+        if (empty()) {
+            throw std::out_of_range("Vector is empty");
+        }
+        return m_arr[0];
+    }
+
+    const int& front() const {
+        if (empty()) {
+            throw std::out_of_range("Vector is empty");
+        }
+        return m_arr[0];
+    }
+
+    // e. back
+    int& back() {
+        if (empty()) {
+            throw std::out_of_range("Vector is empty");
+        }
+        return m_arr[m_size - 1];
+    }
+
+    const int& back() const {
+        if (empty()) {
+            throw std::out_of_range("Vector is empty");
+        }
+        return m_arr[m_size - 1];
+    }
+
+    // f. size
+    size_t size() const {
+        return m_size;
+    }
+
+    // g. empty
+    bool empty() const {
+        return m_size == 0;
+    }
+
+    // h. capacity
+    size_t capacity() const {
+        return m_cap;
+    }
+
+    // i. push_back
+    void push_back(int value) {
+        if (m_size == m_cap) {
+            size_t newCap = (m_cap == 0) ? 1 : m_cap * 2;
+            reserve(newCap);
+        }
+        m_arr[m_size++] = value;
+    }
+
+    // j. insert
+    void insert(size_t index, int value) {
+        if (index > m_size) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        if (m_size == m_cap) {
+            size_t newCap = (m_cap == 0) ? 1 : m_cap * 2;
+            reserve(newCap);
+        }
+        for (size_t i = m_size; i > index; --i) {
+            m_arr[i] = m_arr[i - 1];
+        }
+        m_arr[index] = value;
+        m_size++;
+    }
+
+    // k. erase
+    void erase(size_t index) {
+        if (index >= m_size) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        for (size_t i = index; i < m_size - 1; ++i) {
+            m_arr[i] = m_arr[i + 1];
+        }
+        m_size--;
+    }
+
+    // 6. Оператор []
+    int& operator[](size_t index) {
+        return m_arr[index];
+    }
+
+    const int& operator[](size_t index) const {
+        return m_arr[index];
+    }
+};
+
+int main() {
+    MyVector mas;
+    std::cout << "Initial: Size = " << mas.size() << ", Capacity = " << mas.capacity() << std::endl;
+
+    mas.reserve(2000);
+    std::cout << "After reserve(2000): Size = " << mas.size() << ", Capacity = " << mas.capacity() << std::endl;
+
+    for (int i = 0; i < 100; ++i) {
+        mas.push_back(i);
+        std::cout << "After push_back(" << i << "): Size = " << mas.size() << ", Capacity = " << mas.capacity() << std::endl;
+    }
+
+    mas.shrink_to_fit();
+    std::cout << "After shrink_to_fit(): Size = " << mas.size() << ", Capacity = " << mas.capacity() << std::endl;
+
+    std::cout << "mas[10] = " << mas[10] << std::endl;
+    mas[10] = 2;
+    std::cout << "mas[10] = " << mas[10] << " after assignment" << std::endl;
+
+    std::cout << "front() = " << mas.front() << std::endl;
+    std::cout << "back() = " << mas.back() << std::endl;
+
+    MyVector mas2 = mas; // Конструктор копирования
+    std::cout << "mas2[0] = " << mas2[0] << std::endl;
+    mas2[0] = 99;
+    std::cout << "mas[0] = " << mas[0] << " (should be unchanged)" << std::endl;
+    std::cout << "mas2[0] = " << mas2[0] << std::endl;
+
+    MyVector mas3;
+    mas3 = mas; // Оператор присваивания копированием
+    std::cout << "mas3.size() = " << mas3.size() << std::endl;
+    std::cout << "mas3[50] = " << mas3[50] << std::endl;
+
+    mas3.insert(5, 123);
+    std::cout << "After insert(5, 123): mas3.size() = " << mas3.size() << ", mas3[5] = " << mas3[5] << std::endl;
+    std::cout << "mas[5] = " << mas[5] << " (should be unchanged)" << std::endl;
+
+    mas3.erase(10);
+    std::cout << "After erase(10): mas3.size() = " << mas3.size() << ", mas3[10] = " << mas3[10] << std::endl;
+
+    MyVector mas4(5, 7);
+    std::cout << "mas4: Size = " << mas4.size() << ", Capacity = " << mas4.capacity() << std::endl;
+    for (size_t i = 0; i < mas4.size(); ++i) {
+        std::cout << mas4[i] << " ";
+    }
+    std::cout << std::endl;
+
+    mas4.resize(10);
+    std::cout << "After resize(10): mas4: Size = " << mas4.size() << ", Capacity = " << mas4.capacity() << std::endl;
+    for (size_t i = 0; i < mas4.size(); ++i) {
+        std::cout << mas4[i] << " "; // Новые элементы будут инициализированы нулем (по умолчанию)
+    }
+    std::cout << std::endl;
+
+    mas4.resize(3);
+    std::cout << "After resize(3): mas4: Size = " << mas4.size() << ", Capacity = " << mas4.capacity() << std::endl;
+    for (size_t i = 0; i < mas4.size(); ++i) {
+        std::cout << mas4[i] << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
