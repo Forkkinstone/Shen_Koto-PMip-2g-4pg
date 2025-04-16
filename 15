@@ -346,3 +346,96 @@ int main() {
 
     return 0;
 }
+
+Перепись 
+#include <iostream>
+
+class MyVector {
+private:
+    int* m_arr = nullptr;
+    size_t m_size = 0;
+    size_t m_capacity = 0;
+
+public:
+    // Конструктор по умолчанию
+    MyVector() = default;
+
+    // Деструктор
+    ~MyVector() {
+        delete[] m_arr;
+    }
+
+    void reserve(size_t new_capacity) {
+        if (new_capacity > m_capacity) {
+            int* new_arr = new int[new_capacity];
+            for (size_t i = 0; i < m_size; ++i) {
+                new_arr[i] = m_arr[i];
+            }
+            delete[] m_arr;
+            m_arr = new_arr;
+            m_capacity = new_capacity;
+        }
+    }
+
+    void push_back(int value) {
+        if (m_size == m_capacity) {
+            size_t new_capacity = m_capacity == 0 ? 1 : m_capacity * 2;
+            reserve(new_capacity);
+        }
+        m_arr[m_size++] = value;
+    }
+
+    size_t size() const {
+        return m_size;
+    }
+
+    size_t capacity() const {
+        return m_capacity;
+    }
+
+    void shrink_to_fit() {
+        if (m_size < m_capacity) {
+            int* new_arr = new int[m_size];
+            for (size_t i = 0; i < m_size; ++i) {
+                new_arr[i] = m_arr[i];
+            }
+            delete[] m_arr;
+            m_arr = new_arr;
+            m_capacity = m_size;
+        }
+    }
+
+    int& operator[](size_t index) {
+        return m_arr[index];
+    }
+
+    const int& operator[](size_t index) const {
+        return m_arr[index];
+    }
+
+    int& at(size_t index) {
+        // Проверка
+        return m_arr[index];
+    }
+
+};
+
+
+int main() {
+    MyVector mas;
+    mas.reserve(2000);
+    for(int i=0; i<100; ++i) { // Исправлена опечатка в цикле (i++)
+        mas.push_back(i);
+        std::cout << "Allocate " << mas.size() << " " << mas.capacity() << std::endl;
+    }
+
+    mas.shrink_to_fit();
+    std::cout << "Allocate " << mas.size() << " " << mas.capacity() << std::endl;
+
+    std::cout << mas[10] << std::endl;
+    mas[10] = 2;
+    std::cout << mas[10] << std::endl;
+return 0;
+
+}
+
