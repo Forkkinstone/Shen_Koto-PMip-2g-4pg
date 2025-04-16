@@ -1,0 +1,12 @@
+[{
+	"resource": "/c:/Users/DOTrufanov/Desktop/Lab_14/main.cpp",
+	"owner": "cmake-build-diags",
+	"code": "C2059",
+	"severity": 8,
+	"message": "синтаксическая ошибка: } [C:\\Users\\DOTrufanov\\Desktop\\Lab_14\\build\\example.vcxproj]",
+	"source": "MSVC",
+	"startLineNumber": 88,
+	"startColumn": 1,
+	"endLineNumber": 88,
+	"endColumn": 1
+}]
