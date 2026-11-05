@@ -1,20 +1,30 @@
+--------------------------------------------------ЛАБОРАТОРНАЯ РАБОТА №1--------------------------------------------------------
+
+
+
+-----ЭТАП 1. СОЗДАНИЕ ОСНОВНЫХ ТАБЛИЦ-----
+
+-- Таблица категорий чая
 CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY,
     name VARCHAR(45) NOT NULL
 );
 
+-- Таблица регионов производства
 CREATE TABLE provinces (
     province_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT
 );
 
+-- Таблица поставщиков
 CREATE TABLE suppliers (
     supplier_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     contact_info VARCHAR(150)
 );
 
+-- Таблица товаров
 CREATE TABLE products (
     product_id SERIAL PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
@@ -23,11 +33,15 @@ CREATE TABLE products (
     categories_category_id INT,
     provinces_province_id INT,
     suppliers_supplier_id INT,
-    FOREIGN KEY (categories_category_id) REFERENCES categories(category_id),
-    FOREIGN KEY (provinces_province_id) REFERENCES provinces(province_id),
-    FOREIGN KEY (suppliers_supplier_id) REFERENCES suppliers(supplier_id)
+    FOREIGN KEY (categories_category_id)
+        REFERENCES categories(category_id),
+    FOREIGN KEY (provinces_province_id)
+        REFERENCES provinces(province_id),
+    FOREIGN KEY (suppliers_supplier_id)
+        REFERENCES suppliers(supplier_id)
 );
 
+-- Таблица покупателей
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(100) NOT NULL,
@@ -35,85 +49,120 @@ CREATE TABLE users (
     phone VARCHAR(20)
 );
 
+-- Таблица способов доставки
 CREATE TABLE deliveries (
     delivery_id SERIAL PRIMARY KEY,
     method_name VARCHAR(100) NOT NULL,
     cost DECIMAL(10,2) NOT NULL
 );
 
+-- Таблица заказов
 CREATE TABLE orders (
     order_id SERIAL PRIMARY KEY,
     order_date VARCHAR(45) NOT NULL,
     status VARCHAR(50) NOT NULL,
     users_user_id INT,
     deliveries_delivery_id INT,
-    FOREIGN KEY (users_user_id) REFERENCES users(user_id),
-    FOREIGN KEY (deliveries_delivery_id) REFERENCES deliveries(delivery_id)
+    FOREIGN KEY (users_user_id)
+        REFERENCES users(user_id),
+    FOREIGN KEY (deliveries_delivery_id)
+        REFERENCES deliveries(delivery_id)
 );
 
+-- Таблица состава заказов
 CREATE TABLE order_items (
     order_item_id SERIAL PRIMARY KEY,
     quantity INT NOT NULL,
     orders_order_id INT,
     products_product_id INT,
-    FOREIGN KEY (orders_order_id) REFERENCES orders(order_id),
-    FOREIGN KEY (products_product_id) REFERENCES products(product_id)
+    FOREIGN KEY (orders_order_id)
+        REFERENCES orders(order_id),
+    FOREIGN KEY (products_product_id)
+        REFERENCES products(product_id)
 );
 
+-- Таблица складских остатков
 CREATE TABLE warehouse (
     stock_id SERIAL PRIMARY KEY,
     quantity_gram INT NOT NULL,
     shelf_location VARCHAR(45),
     products_product_id INT,
-    FOREIGN KEY (products_product_id) REFERENCES products(product_id)
+    FOREIGN KEY (products_product_id)
+        REFERENCES products(product_id)
 );
 
-INSERT INTO categories (name) VALUES 
+
+-----ЭТАП 2. ДОБАВЛЕНИЕ ДАННЫХ В ОСНОВНЫЕ ТАБЛИЦЫ-----
+
+INSERT INTO categories (name) VALUES
 ('Улун'),
 ('Шу Пуэр'),
 ('Белый чай');
 
-INSERT INTO provinces (name, description) VALUES 
+INSERT INTO provinces (name, description) VALUES
 ('Фуцзянь', 'Родина знаменитых улунов и белого чая'),
 ('Юньнань', 'Исторический регион производства пуэров');
 
-INSERT INTO suppliers (name, contact_info) VALUES 
+INSERT INTO suppliers (name, contact_info) VALUES
 ('ChinaTea Co.', 'contact@chinatea.com'),
 ('Yunnan Leaf', 'info@yunnanleaf.cn');
 
-INSERT INTO users (username, email, phone) VALUES 
+INSERT INTO users (username, email, phone) VALUES
 ('Даниил', 'forkkinston@mail.com', '+79001234567'),
 ('Иван Иванов', 'ivan@gmail.com', '+79009876543');
 
-INSERT INTO deliveries (method_name, cost) VALUES 
+INSERT INTO deliveries (method_name, cost) VALUES
 ('СДЭК', 300.00),
 ('Почта России', 250.00);
 
-SELECT * FROM categories;
 
-------------------------------------------------------- Лабораторная №3 ----------------------------------------------
+
+-----ЭТАП 3. ПРОСМОТР ДАННЫХ-----
+
+SELECT * FROM categories;
+SELECT * FROM provinces;
+SELECT * FROM suppliers;
+SELECT * FROM users;
+SELECT * FROM deliveries;
+
+
+
+
+
+-------------------------------------------------------------ЛАБОРАТОРНАЯ РАБОТА №3--------------------------------------------------------------
+-----------------------------------------------Проверка INSERT, UPDATE, DELETE и внешних ключей--------------------------------------------------
+
+
+-----ЭТАП 4. СОЗДАНИЕ ДВУХ ТЕСТОВЫХ ТАБЛИЦ-----
+--Используем отдельные таблицы, чтобы не менять основные. DROP TABLE позволяет повторно подготовить тестовую часть.
 
 DROP TABLE IF EXISTS lab3_products;
 DROP TABLE IF EXISTS lab3_categories;
 
+-- Родительская таблица: категории
 CREATE TABLE lab3_categories (
     category_id INT PRIMARY KEY,
     category_name VARCHAR(100) NOT NULL
 );
 
+-- Дочерняя таблица: товары
 CREATE TABLE lab3_products (
     product_id INT PRIMARY KEY,
     product_name VARCHAR(100) NOT NULL,
     category_id INT DEFAULT 1,
 
-    CONSTRAINT fk_lab3_products_category --объявляем ограничение с заданным именем-- 
-    FOREIGN KEY (category_id)
-    REFERENCES lab3_categories(category_id)
-    ON UPDATE NO ACTION --запрещаем менять идентификатор категории, если на него ссылаются товары--
-    ON DELETE NO ACTION --запрещаем удалять категорию, если на неё ссылаются товары--
+    -- Создаём внешний ключ с начальной настройкой NO ACTION
+    CONSTRAINT fk_lab3_products_category
+        FOREIGN KEY (category_id)
+        REFERENCES lab3_categories(category_id)
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
 );
 
--- Добавляем категории
+
+
+-----ЭТАП 5. ДОБАВЛЕНИЕ ИСХОДНЫХ ДАННЫХ-----
+
 INSERT INTO lab3_categories
 (category_id, category_name)
 VALUES
@@ -121,61 +170,151 @@ VALUES
 (2, 'Шу Пуэр'),
 (3, 'Белый чай');
 
--- Добавляем товар
 INSERT INTO lab3_products
 (product_id, product_name, category_id)
 VALUES
 (101, 'Мэнхайский Шу Пуэр', 2);
 
--- Проверяем содержимое таблиц
+-- Проверяем исходное состояние таблиц
 SELECT * FROM lab3_categories;
 SELECT * FROM lab3_products;
 
-UPDATE lab3_categories --проверка ограничений--
+
+
+-----ЭТАП 6. ПРОВЕРКА INSERT-----
+
+--6.1. Добавляем товар с существующей категорией.
+
+INSERT INTO lab3_products
+(product_id, product_name, category_id)
+VALUES
+(102, 'Да Хун Пао', 1);
+
+SELECT * FROM lab3_products;
+
+
+--6.2. Пробуем добавить товар с несуществующей категорией.
+
+INSERT INTO lab3_products
+(product_id, product_name, category_id)
+VALUES
+(103, 'Неизвестный чай', 999);
+
+
+
+-----ЭТАП 7. ПРОВЕРКА UPDATE-----
+
+--7.1. Изменяем категорию товара на существующую.
+
+UPDATE lab3_products
+SET category_id = 3
+WHERE product_id = 101;
+
+SELECT * FROM lab3_products;
+
+-- Возвращаем товар в исходную категорию
+UPDATE lab3_products
+SET category_id = 2
+WHERE product_id = 101;
+
+
+--7.2. Пробуем указать несуществующую категорию.
+
+UPDATE lab3_products
+SET category_id = 999
+WHERE product_id = 101;
+
+
+
+-----ЭТАП 8. ПРОВЕРКА DELETE-----
+
+--Удаляем товар из дочерней таблицы.
+
+DELETE FROM lab3_products
+WHERE product_id = 102;
+
+SELECT * FROM lab3_products;
+
+
+
+-----ЭТАП 9. NO ACTION-----
+
+--Проверяем запрет изменения и удаления родительской записи, на которую ссылается товар.
+
+--9.1. Пробуем изменить ID категории 2 на 20. Ожидаем: ОШИБКА, так как на категорию ссылается товар.
+
+UPDATE lab3_categories
 SET category_id = 20
 WHERE category_id = 2;
 
-DELETE FROM lab3_categories --проверка ограничений--
+
+
+--9.2. Пробуем удалить категорию 2. Ожидаем: ОШИБКА, так как на категорию ссылается товар.
+
+DELETE FROM lab3_categories
 WHERE category_id = 2;
 
-ALTER TABLE lab3_products --удалим существующие ограничения--
+
+
+-----ЭТАП 10. CASCADE-----
+
+--Удаляем старое ограничение и создаём новое. Теперь изменение и удаление родителя передаётся дочерним записям автоматически.
+
+ALTER TABLE lab3_products
 DROP CONSTRAINT fk_lab3_products_category;
 
-ALTER TABLE lab3_products --зададим новые ограничения--
+ALTER TABLE lab3_products
 ADD CONSTRAINT fk_lab3_products_category
 FOREIGN KEY (category_id)
 REFERENCES lab3_categories(category_id)
 ON UPDATE CASCADE
 ON DELETE CASCADE;
 
-UPDATE lab3_categories --автоматическое изменение зависимых записей--
+
+--10.1. Проверяем ON UPDATE CASCADE. Ожидаем: ID категории в таблице товаров тоже станет 20.
+
+UPDATE lab3_categories
 SET category_id = 20
-WHERE category_id = 2; 
+WHERE category_id = 2;
 
-SELECT * FROM lab3_products; --проверим--
+SELECT * FROM lab3_products;
 
-DELETE FROM lab3_categories --теперь проверим удаление--
+
+--Возвращаем ID категории обратно. CASCADE автоматически вернёт ID товара к значению 2. */
+
+UPDATE lab3_categories
+SET category_id = 2
 WHERE category_id = 20;
 
-SELECT * FROM lab3_products; --посмотрим на товары--
+SELECT * FROM lab3_products;
 
-------- вернёмся к исходным данным экспериментируемых таблиц------
-DELETE FROM lab3_products;
-DELETE FROM lab3_categories;
+
+--10.2. Проверяем ON DELETE CASCADE. Ожидаем: удаление категории автоматически удалит товар.
+
+DELETE FROM lab3_categories
+WHERE category_id = 2;
+
+SELECT * FROM lab3_products;
+
+
+--Восстанавливаем удалённую категорию и товар для следующего эксперимента.
 
 INSERT INTO lab3_categories
 (category_id, category_name)
 VALUES
-(1, 'Улун'),
-(2, 'Шу Пуэр'),
-(3, 'Белый чай');
+(2, 'Шу Пуэр');
 
 INSERT INTO lab3_products
 (product_id, product_name, category_id)
 VALUES
 (101, 'Мэнхайский Шу Пуэр', 2);
 
---SET NULL--
+
+
+-----ЭТАП 11. SET NULL-----
+
+--При изменении или удалении родительской записи внешний ключ товара будет принимать значение NULL.
+
 ALTER TABLE lab3_products
 DROP CONSTRAINT fk_lab3_products_category;
 
@@ -186,52 +325,53 @@ REFERENCES lab3_categories(category_id)
 ON UPDATE SET NULL
 ON DELETE SET NULL;
 
+
+--11.1. Проверяем ON UPDATE SET NULL. Ожидаем: category_id товара станет NULL.
+
 UPDATE lab3_categories
 SET category_id = 20
 WHERE category_id = 2;
 
-SELECT * FROM lab3_products; --проверим, будет null--
+SELECT * FROM lab3_products;
 
------восстановим данные----
-DELETE FROM lab3_products;
-DELETE FROM lab3_categories;
 
-INSERT INTO lab3_categories
-(category_id, category_name)
-VALUES
-(1, 'Улун'),
-(2, 'Шу Пуэр'),
-(3, 'Белый чай');
+--Восстанавливаем исходные значения для проверки DELETE. Сначала возвращаем ID категории, затем связь товара с ней.
 
-INSERT INTO lab3_products
-(product_id, product_name, category_id)
-VALUES
-(101, 'Мэнхайский Шу Пуэр', 2);
+UPDATE lab3_categories
+SET category_id = 2
+WHERE category_id = 20;
 
----удалим категорию---
+UPDATE lab3_products
+SET category_id = 2
+WHERE product_id = 101;
+
+
+--11.2. Проверяем ON DELETE SET NULL. Ожидаем: категория удалится, товар останется, но его category_id станет NULL.
+
 DELETE FROM lab3_categories
 WHERE category_id = 2;
 
---проверим--
 SELECT * FROM lab3_products;
 
-------восстановим данные------
-DELETE FROM lab3_products;
-DELETE FROM lab3_categories;
+
+--Восстанавливаем связь для следующего эксперимента.
 
 INSERT INTO lab3_categories
 (category_id, category_name)
 VALUES
-(1, 'Улун'),
-(2, 'Шу Пуэр'),
-(3, 'Белый чай');
+(2, 'Шу Пуэр');
 
-INSERT INTO lab3_products
-(product_id, product_name, category_id)
-VALUES
-(101, 'Мэнхайский Шу Пуэр', 2);
+UPDATE lab3_products
+SET category_id = 2
+WHERE product_id = 101;
 
----SET DEFAULT---
+
+
+-----ЭТАП 12. SET DEFAULT-----
+
+--При изменении или удалении родительской записи внешний ключ товара примет значение по умолчанию: 1. 
+--Категория с ID = 1 существует, поэтому ссылка корректна.
+
 ALTER TABLE lab3_products
 DROP CONSTRAINT fk_lab3_products_category;
 
@@ -242,65 +382,39 @@ REFERENCES lab3_categories(category_id)
 ON UPDATE SET DEFAULT
 ON DELETE SET DEFAULT;
 
---попробуем изменить идентификатор категории--
+
+--12.1. Проверяем ON UPDATE SET DEFAULT. Ожидаем: category_id товара станет равен 1.
+
 UPDATE lab3_categories
 SET category_id = 20
 WHERE category_id = 2;
 
---проверяем--
 SELECT * FROM lab3_products;
 
---снова восстанавливаем данные--
-DELETE FROM lab3_products;
-DELETE FROM lab3_categories;
 
-INSERT INTO lab3_categories
-(category_id, category_name)
-VALUES
-(1, 'Улун'),
-(2, 'Шу Пуэр'),
-(3, 'Белый чай');
+--Восстанавливаем исходное состояние для проверки DELETE.
 
-INSERT INTO lab3_products
-(product_id, product_name, category_id)
-VALUES
-(101, 'Мэнхайский Шу Пуэр', 2);
+UPDATE lab3_categories
+SET category_id = 2
+WHERE category_id = 20;
 
---удаляем--
+UPDATE lab3_products
+SET category_id = 2
+WHERE product_id = 101;
+
+
+
+--12.2. Проверяем ON DELETE SET DEFAULT. Ожидаем: категория удалится, товар останется, его category_id станет равен 1.
+
 DELETE FROM lab3_categories
 WHERE category_id = 2;
 
---проверяем--
 SELECT * FROM lab3_products;
 
--------------------------------------------------------INSERT--------------------------------------------------------
-INSERT INTO lab3_products
-(product_id, product_name, category_id)
-VALUES
-(102, 'Да Хун Пао', 1);
 
-SELECT * FROM lab3_products;
+-----ЭТАП 13. ИТОГОВАЯ ПРОВЕРКА-----
 
---попробуем сослаться на несуществующую категорию--
-INSERT INTO lab3_products
-(product_id, product_name, category_id)
-VALUES
-(103, 'Неизвестный чай', 999);
+--Показываем итоговое содержимое обеих таблиц. Внешний ключ товара должен указывать на категорию 1.
 
-------------------------------------------------------UPDATE----------------------------------------------------------
-UPDATE lab3_products
-SET category_id = 3
-WHERE product_id = 101;
-
-SELECT * FROM lab3_products;
-
---пробуем изменить категорию на несуществующую--
-UPDATE lab3_products
-SET category_id = 999
-WHERE product_id = 101;
-
------------------------------------------------------DELETE-----------------------------------------------------------
-DELETE FROM lab3_products
-WHERE product_id = 102;
-
+SELECT * FROM lab3_categories;
 SELECT * FROM lab3_products;
