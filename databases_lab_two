@@ -89,4 +89,218 @@ INSERT INTO deliveries (method_name, cost) VALUES
 ('СДЭК', 300.00),
 ('Почта России', 250.00);
 
-SELECT * FROM suppliers;
+SELECT * FROM categories;
+
+------------------------------------------------------- Лабораторная №3 ----------------------------------------------
+
+DROP TABLE IF EXISTS lab3_products;
+DROP TABLE IF EXISTS lab3_categories;
+
+CREATE TABLE lab3_categories (
+    category_id INT PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE lab3_products (
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(100) NOT NULL,
+    category_id INT DEFAULT 1,
+
+    CONSTRAINT fk_lab3_products_category --объявляем ограничение с заданным именем-- 
+    FOREIGN KEY (category_id)
+    REFERENCES lab3_categories(category_id)
+    ON UPDATE NO ACTION --запрещаем менять идентификатор категории, если на него ссылаются товары--
+    ON DELETE NO ACTION --запрещаем удалять категорию, если на неё ссылаются товары--
+);
+
+-- Добавляем категории
+INSERT INTO lab3_categories
+(category_id, category_name)
+VALUES
+(1, 'Улун'),
+(2, 'Шу Пуэр'),
+(3, 'Белый чай');
+
+-- Добавляем товар
+INSERT INTO lab3_products
+(product_id, product_name, category_id)
+VALUES
+(101, 'Мэнхайский Шу Пуэр', 2);
+
+-- Проверяем содержимое таблиц
+SELECT * FROM lab3_categories;
+SELECT * FROM lab3_products;
+
+UPDATE lab3_categories --проверка ограничений--
+SET category_id = 20
+WHERE category_id = 2;
+
+DELETE FROM lab3_categories --проверка ограничений--
+WHERE category_id = 2;
+
+ALTER TABLE lab3_products --удалим существующие ограничения--
+DROP CONSTRAINT fk_lab3_products_category;
+
+ALTER TABLE lab3_products --зададим новые ограничения--
+ADD CONSTRAINT fk_lab3_products_category
+FOREIGN KEY (category_id)
+REFERENCES lab3_categories(category_id)
+ON UPDATE CASCADE
+ON DELETE CASCADE;
+
+UPDATE lab3_categories --автоматическое изменение зависимых записей--
+SET category_id = 20
+WHERE category_id = 2; 
+
+SELECT * FROM lab3_products; --проверим--
+
+DELETE FROM lab3_categories --теперь проверим удаление--
+WHERE category_id = 20;
+
+SELECT * FROM lab3_products; --посмотрим на товары--
+
+------- вернёмся к исходным данным экспериментируемых таблиц------
+DELETE FROM lab3_products;
+DELETE FROM lab3_categories;
+
+INSERT INTO lab3_categories
+(category_id, category_name)
+VALUES
+(1, 'Улун'),
+(2, 'Шу Пуэр'),
+(3, 'Белый чай');
+
+INSERT INTO lab3_products
+(product_id, product_name, category_id)
+VALUES
+(101, 'Мэнхайский Шу Пуэр', 2);
+
+--SET NULL--
+ALTER TABLE lab3_products
+DROP CONSTRAINT fk_lab3_products_category;
+
+ALTER TABLE lab3_products
+ADD CONSTRAINT fk_lab3_products_category
+FOREIGN KEY (category_id)
+REFERENCES lab3_categories(category_id)
+ON UPDATE SET NULL
+ON DELETE SET NULL;
+
+UPDATE lab3_categories
+SET category_id = 20
+WHERE category_id = 2;
+
+SELECT * FROM lab3_products; --проверим, будет null--
+
+-----восстановим данные----
+DELETE FROM lab3_products;
+DELETE FROM lab3_categories;
+
+INSERT INTO lab3_categories
+(category_id, category_name)
+VALUES
+(1, 'Улун'),
+(2, 'Шу Пуэр'),
+(3, 'Белый чай');
+
+INSERT INTO lab3_products
+(product_id, product_name, category_id)
+VALUES
+(101, 'Мэнхайский Шу Пуэр', 2);
+
+---удалим категорию---
+DELETE FROM lab3_categories
+WHERE category_id = 2;
+
+--проверим--
+SELECT * FROM lab3_products;
+
+------восстановим данные------
+DELETE FROM lab3_products;
+DELETE FROM lab3_categories;
+
+INSERT INTO lab3_categories
+(category_id, category_name)
+VALUES
+(1, 'Улун'),
+(2, 'Шу Пуэр'),
+(3, 'Белый чай');
+
+INSERT INTO lab3_products
+(product_id, product_name, category_id)
+VALUES
+(101, 'Мэнхайский Шу Пуэр', 2);
+
+---SET DEFAULT---
+ALTER TABLE lab3_products
+DROP CONSTRAINT fk_lab3_products_category;
+
+ALTER TABLE lab3_products
+ADD CONSTRAINT fk_lab3_products_category
+FOREIGN KEY (category_id)
+REFERENCES lab3_categories(category_id)
+ON UPDATE SET DEFAULT
+ON DELETE SET DEFAULT;
+
+--попробуем изменить идентификатор категории--
+UPDATE lab3_categories
+SET category_id = 20
+WHERE category_id = 2;
+
+--проверяем--
+SELECT * FROM lab3_products;
+
+--снова восстанавливаем данные--
+DELETE FROM lab3_products;
+DELETE FROM lab3_categories;
+
+INSERT INTO lab3_categories
+(category_id, category_name)
+VALUES
+(1, 'Улун'),
+(2, 'Шу Пуэр'),
+(3, 'Белый чай');
+
+INSERT INTO lab3_products
+(product_id, product_name, category_id)
+VALUES
+(101, 'Мэнхайский Шу Пуэр', 2);
+
+--удаляем--
+DELETE FROM lab3_categories
+WHERE category_id = 2;
+
+--проверяем--
+SELECT * FROM lab3_products;
+
+-------------------------------------------------------INSERT--------------------------------------------------------
+INSERT INTO lab3_products
+(product_id, product_name, category_id)
+VALUES
+(102, 'Да Хун Пао', 1);
+
+SELECT * FROM lab3_products;
+
+--попробуем сослаться на несуществующую категорию--
+INSERT INTO lab3_products
+(product_id, product_name, category_id)
+VALUES
+(103, 'Неизвестный чай', 999);
+
+------------------------------------------------------UPDATE----------------------------------------------------------
+UPDATE lab3_products
+SET category_id = 3
+WHERE product_id = 101;
+
+SELECT * FROM lab3_products;
+
+--пробуем изменить категорию на несуществующую--
+UPDATE lab3_products
+SET category_id = 999
+WHERE product_id = 101;
+
+-----------------------------------------------------DELETE-----------------------------------------------------------
+DELETE FROM lab3_products
+WHERE product_id = 102;
+
+SELECT * FROM lab3_products;
