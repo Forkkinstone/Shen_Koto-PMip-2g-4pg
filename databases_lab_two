@@ -1,0 +1,92 @@
+CREATE TABLE categories (
+    category_id SERIAL PRIMARY KEY,
+    name VARCHAR(45) NOT NULL
+);
+
+CREATE TABLE provinces (
+    province_id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT
+);
+
+CREATE TABLE suppliers (
+    supplier_id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    contact_info VARCHAR(150)
+);
+
+CREATE TABLE products (
+    product_id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    harvest_year INT,
+    categories_category_id INT,
+    provinces_province_id INT,
+    suppliers_supplier_id INT,
+    FOREIGN KEY (categories_category_id) REFERENCES categories(category_id),
+    FOREIGN KEY (provinces_province_id) REFERENCES provinces(province_id),
+    FOREIGN KEY (suppliers_supplier_id) REFERENCES suppliers(supplier_id)
+);
+
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20)
+);
+
+CREATE TABLE deliveries (
+    delivery_id SERIAL PRIMARY KEY,
+    method_name VARCHAR(100) NOT NULL,
+    cost DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE orders (
+    order_id SERIAL PRIMARY KEY,
+    order_date VARCHAR(45) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    users_user_id INT,
+    deliveries_delivery_id INT,
+    FOREIGN KEY (users_user_id) REFERENCES users(user_id),
+    FOREIGN KEY (deliveries_delivery_id) REFERENCES deliveries(delivery_id)
+);
+
+CREATE TABLE order_items (
+    order_item_id SERIAL PRIMARY KEY,
+    quantity INT NOT NULL,
+    orders_order_id INT,
+    products_product_id INT,
+    FOREIGN KEY (orders_order_id) REFERENCES orders(order_id),
+    FOREIGN KEY (products_product_id) REFERENCES products(product_id)
+);
+
+CREATE TABLE warehouse (
+    stock_id SERIAL PRIMARY KEY,
+    quantity_gram INT NOT NULL,
+    shelf_location VARCHAR(45),
+    products_product_id INT,
+    FOREIGN KEY (products_product_id) REFERENCES products(product_id)
+);
+
+INSERT INTO categories (name) VALUES 
+('Улун'),
+('Шу Пуэр'),
+('Белый чай');
+
+INSERT INTO provinces (name, description) VALUES 
+('Фуцзянь', 'Родина знаменитых улунов и белого чая'),
+('Юньнань', 'Исторический регион производства пуэров');
+
+INSERT INTO suppliers (name, contact_info) VALUES 
+('ChinaTea Co.', 'contact@chinatea.com'),
+('Yunnan Leaf', 'info@yunnanleaf.cn');
+
+INSERT INTO users (username, email, phone) VALUES 
+('Даниил', 'forkkinston@mail.com', '+79001234567'),
+('Иван Иванов', 'ivan@gmail.com', '+79009876543');
+
+INSERT INTO deliveries (method_name, cost) VALUES 
+('СДЭК', 300.00),
+('Почта России', 250.00);
+
+SELECT * FROM suppliers;
