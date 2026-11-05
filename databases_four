@@ -1,0 +1,185 @@
+-- =============================================
+-- ЛАБОРАТОРНАЯ РАБОТА №4
+-- 5 INSERT, 5 UPDATE, 5 DELETE
+-- =============================================
+
+
+-- =============================================
+-- 1. INSERT — ДОБАВЛЕНИЕ ДАННЫХ
+-- =============================================
+
+-- 1.1. Добавляем улун
+INSERT INTO products
+(product_id, title, price, harvest_year,
+ categories_category_id, provinces_province_id, suppliers_supplier_id)
+VALUES
+(9001, 'Те Гуань Инь — тест ЛР4', 850.00, 2024, 1, 1, 1);
+
+-- 1.2. Добавляем шу пуэр
+INSERT INTO products
+(product_id, title, price, harvest_year,
+ categories_category_id, provinces_province_id, suppliers_supplier_id)
+VALUES
+(9002, 'Шу Пуэр — тест ЛР4', 1200.00, 2022, 2, 2, 2);
+
+-- 1.3. Добавляем заказ пользователя
+INSERT INTO orders
+(order_id, order_date, status, users_user_id, deliveries_delivery_id)
+VALUES
+(9001, '2026-11-05', 'Новый', 1, 1);
+
+-- 1.4. Добавляем товар в заказ
+INSERT INTO order_items
+(order_item_id, quantity, orders_order_id, products_product_id)
+VALUES
+(9001, 2, 9001, 9001);
+
+-- 1.5. Добавляем товар на склад
+INSERT INTO warehouse
+(stock_id, quantity_gram, shelf_location, products_product_id)
+VALUES
+(9001, 500, 'A-01', 9001);
+
+
+
+-- =============================================
+-- 2. UPDATE — ИЗМЕНЕНИЕ ДАННЫХ
+-- =============================================
+
+-- 2.1. Повышаем цену товара.
+-- Подзапрос выбирает товар из одной таблицы.
+UPDATE products
+SET price = price + 50
+WHERE product_id IN (
+    SELECT product_id
+    FROM products
+    WHERE product_id = 9001
+);
+
+-- 2.2. Повышаем цену улуна.
+-- Подзапрос соединяет товары и категории через INNER JOIN.
+UPDATE products
+SET price = price * 1.05
+WHERE product_id IN (
+    SELECT p.product_id
+    FROM products p
+    INNER JOIN categories c
+        ON p.categories_category_id = c.category_id
+    WHERE c.name = 'Улун'
+      AND p.product_id = 9001
+);
+
+-- 2.3. Меняем статус заказа пользователя.
+UPDATE orders
+SET status = 'В обработке'
+WHERE order_id IN (
+    SELECT o.order_id
+    FROM orders o
+    INNER JOIN users u
+        ON o.users_user_id = u.user_id
+    WHERE u.username = 'Даниил'
+      AND o.order_id = 9001
+);
+
+-- 2.4. Уменьшаем количество чая на складе.
+UPDATE warehouse
+SET quantity_gram = quantity_gram - 50
+WHERE stock_id IN (
+    SELECT w.stock_id
+    FROM warehouse w
+    INNER JOIN products p
+        ON w.products_product_id = p.product_id
+    WHERE p.product_id = 9001
+      AND w.quantity_gram >= 50
+);
+
+-- 2.5. Увеличиваем количество товара в заказе.
+UPDATE order_items
+SET quantity = quantity + 1
+WHERE order_item_id IN (
+    SELECT oi.order_item_id
+    FROM order_items oi
+    INNER JOIN orders o
+        ON oi.orders_order_id = o.order_id
+    INNER JOIN products p
+        ON oi.products_product_id = p.product_id
+    WHERE o.order_id = 9001
+      AND p.title = 'Те Гуань Инь — тест ЛР4'
+);
+
+
+
+-- =============================================
+-- 3. DELETE — УДАЛЕНИЕ ДАННЫХ
+-- =============================================
+
+-- 3.1. Удаляем запись о товаре со склада.
+-- Подзапрос использует INNER JOIN.
+DELETE FROM warehouse
+WHERE stock_id IN (
+    SELECT w.stock_id
+    FROM warehouse w
+    INNER JOIN products p
+        ON w.products_product_id = p.product_id
+    WHERE p.product_id = 9001
+);
+
+-- 3.2. Удаляем товар из заказа.
+DELETE FROM order_items
+WHERE order_item_id IN (
+    SELECT oi.order_item_id
+    FROM order_items oi
+    INNER JOIN orders o
+        ON oi.orders_order_id = o.order_id
+    WHERE o.order_id = 9001
+);
+
+-- 3.3. Удаляем заказ пользователя.
+-- Используем два INNER JOIN.
+DELETE FROM orders
+WHERE order_id IN (
+    SELECT o.order_id
+    FROM orders o
+    INNER JOIN users u
+        ON o.users_user_id = u.user_id
+    INNER JOIN deliveries d
+        ON o.deliveries_delivery_id = d.delivery_id
+    WHERE u.username = 'Даниил'
+      AND d.method_name = 'СДЭК'
+      AND o.order_id = 9001
+);
+
+-- 3.4. Удаляем улун.
+-- Подзапрос выбирает запись из одной таблицы.
+DELETE FROM products
+WHERE product_id IN (
+    SELECT product_id
+    FROM products
+    WHERE product_id = 9001
+);
+
+-- 3.5. Удаляем шу пуэр.
+-- Подзапрос соединяет товары, категории и провинции.
+DELETE FROM products
+WHERE product_id IN (
+    SELECT p.product_id
+    FROM products p
+    INNER JOIN categories c
+        ON p.categories_category_id = c.category_id
+    INNER JOIN provinces pr
+        ON p.provinces_province_id = pr.province_id
+    WHERE p.product_id = 9002
+      AND c.name = 'Шу Пуэр'
+      AND pr.name = 'Юньнань'
+);
+
+
+
+-- =============================================
+-- 4. ПРОВЕРКА РЕЗУЛЬТАТОВ
+-- =============================================
+
+SELECT * FROM products;
+SELECT * FROM orders;
+SELECT * FROM order_items;
+SELECT * FROM warehouse;
