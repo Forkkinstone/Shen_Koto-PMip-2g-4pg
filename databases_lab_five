@@ -1,0 +1,324 @@
+--------------------------------------------------ЛАБОРАТОРНАЯ РАБОТА №1--------------------------------------------------------
+
+
+
+-----ЭТАП 1. СОЗДАНИЕ ОСНОВНЫХ ТАБЛИЦ-----
+
+-- Таблица категорий чая
+CREATE TABLE categories (
+    category_id SERIAL PRIMARY KEY,
+    name VARCHAR(45) NOT NULL
+);
+
+-- Таблица регионов производства
+CREATE TABLE provinces (
+    province_id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT
+);
+
+-- Таблица поставщиков
+CREATE TABLE suppliers (
+    supplier_id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    contact_info VARCHAR(150)
+);
+
+-- Таблица товаров
+CREATE TABLE products (
+    product_id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    harvest_year INT,
+    categories_category_id INT,
+    provinces_province_id INT,
+    suppliers_supplier_id INT,
+    FOREIGN KEY (categories_category_id)
+        REFERENCES categories(category_id),
+    FOREIGN KEY (provinces_province_id)
+        REFERENCES provinces(province_id),
+    FOREIGN KEY (suppliers_supplier_id)
+        REFERENCES suppliers(supplier_id)
+);
+
+-- Таблица покупателей
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20)
+);
+
+-- Таблица способов доставки
+CREATE TABLE deliveries (
+    delivery_id SERIAL PRIMARY KEY,
+    method_name VARCHAR(100) NOT NULL,
+    cost DECIMAL(10,2) NOT NULL
+);
+
+-- Таблица заказов
+CREATE TABLE orders (
+    order_id SERIAL PRIMARY KEY,
+    order_date VARCHAR(45) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    users_user_id INT,
+    deliveries_delivery_id INT,
+    FOREIGN KEY (users_user_id)
+        REFERENCES users(user_id),
+    FOREIGN KEY (deliveries_delivery_id)
+        REFERENCES deliveries(delivery_id)
+);
+
+-- Таблица состава заказов
+CREATE TABLE order_items (
+    order_item_id SERIAL PRIMARY KEY,
+    quantity INT NOT NULL,
+    orders_order_id INT,
+    products_product_id INT,
+    FOREIGN KEY (orders_order_id)
+        REFERENCES orders(order_id),
+    FOREIGN KEY (products_product_id)
+        REFERENCES products(product_id)
+);
+
+-- Таблица складских остатков
+CREATE TABLE warehouse (
+    stock_id SERIAL PRIMARY KEY,
+    quantity_gram INT NOT NULL,
+    shelf_location VARCHAR(45),
+    products_product_id INT,
+    FOREIGN KEY (products_product_id)
+        REFERENCES products(product_id)
+);
+
+
+-----ЭТАП 2. ДОБАВЛЕНИЕ ДАННЫХ В ОСНОВНЫЕ ТАБЛИЦЫ-----
+
+INSERT INTO categories (name) VALUES
+('Улун'),
+('Шу Пуэр'),
+('Белый чай');
+
+INSERT INTO provinces (name, description) VALUES
+('Фуцзянь', 'Родина знаменитых улунов и белого чая'),
+('Юньнань', 'Исторический регион производства пуэров');
+
+INSERT INTO suppliers (name, contact_info) VALUES
+('ChinaTea Co.', 'contact@chinatea.com'),
+('Yunnan Leaf', 'info@yunnanleaf.cn');
+
+INSERT INTO users (username, email, phone) VALUES
+('Даниил', 'forkkinston@mail.com', '+79001234567'),
+('Иван Иванов', 'ivan@gmail.com', '+79009876543');
+
+INSERT INTO deliveries (method_name, cost) VALUES
+('СДЭК', 300.00),
+('Почта России', 250.00);
+
+
+
+-----ЭТАП 3. ПРОСМОТР ДАННЫХ-----
+
+SELECT * FROM categories;
+SELECT * FROM provinces;
+SELECT * FROM suppliers;
+SELECT * FROM users;
+SELECT * FROM deliveries;
+
+----------------------------------------------------------ЛАБА 5---------------------------------------------------------
+
+-- Добавляем дополнительную категорию без товаров.
+
+INSERT INTO categories (name)
+SELECT 'Категория без товаров'
+WHERE NOT EXISTS (
+    SELECT 1 FROM categories
+    WHERE name = 'Категория без товаров'
+);
+
+-- Добавляем демонстрационный улун.
+
+INSERT INTO products
+(title, price, harvest_year, categories_category_id,
+ provinces_province_id, suppliers_supplier_id)
+SELECT
+    'Те Гуань Инь',
+    850.00, 2024, 1, 1, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM products
+    WHERE title = 'Те Гуань Инь'
+);
+
+-- Добавляем демонстрационный шу пуэр.
+
+INSERT INTO products
+(title, price, harvest_year, categories_category_id,
+ provinces_province_id, suppliers_supplier_id)
+SELECT
+    'Шу Пуэр Гун Тин',
+    1750.00, 2022, 2, 2, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM products
+    WHERE title = 'Шу Пуэр Гун Тин'
+);
+
+-- Добавляем демонстрационный белый чай.
+
+INSERT INTO products
+(title, price, harvest_year, categories_category_id,
+ provinces_province_id, suppliers_supplier_id)
+SELECT
+    'Бай Му Дань',
+    2100.00, 2023, 3, 1, 2
+WHERE NOT EXISTS (
+    SELECT 1 FROM products
+    WHERE title = 'Бай Му Дань'
+);
+
+--Выводим всю таблицу
+SELECT ALL *
+FROM products;
+
+--Вывести три самых дорогих товара
+SELECT title, price, harvest_year
+FROM products
+ORDER BY price DESC 
+LIMIT 3;
+
+--Вывести уникальные названия категорий
+SELECT DISTINCT categories.name
+FROM categories
+INNER JOIN products
+ON products.categories_category_id = categories.category_id;
+
+--Подсчитать общее колво товаров
+SELECT COUNT(*)
+FROM products;
+
+--Подсчитать колво заполненных цен
+SELECT COUNT(price)
+FROM products;
+
+--Подсчитать колво разных поставщиков
+SELECT COUNT(DISTINCT suppliers_supplier_id)
+FROM products;
+
+--Поиск минимальной цены
+SELECT MIN(price)
+FROM products;
+
+--Найти максимальную цену
+SELECT MAX(price)
+FROM products;
+
+--Расчёт общей суммы цен
+SELECT SUM(price)
+FROM products;
+
+--Расчёт средней цены
+SELECT AVG(price)
+FROM products;
+
+--Прибавить 300руб к цене каждого товара
+SELECT title, price, price + 300
+FROM products;
+
+--Рассчитать 10% от цены каждого товара
+SELECT title, price, price * 10 / 100
+FROM products;
+
+--Использование строковых функций
+SELECT
+    title,
+    UPPER(title),
+    LOWER(title),
+    LENGTH(title),
+    LEFT(title, 10)
+FROM products;
+
+--Применение математических функций
+SELECT
+    title,
+    price,
+    ROUND(price * 1.05, 2),
+    CEILING(price / 100.0),
+    FLOOR(price / 100.0),
+    ABS(price - 1000)
+FROM products;
+
+--Использование функций даты и времени
+SELECT
+    title,
+    CURRENT_DATE,
+    CURRENT_TIMESTAMP,
+    CURRENT_DATE + INTERVAL '7 days',
+    EXTRACT(YEAR FROM CURRENT_DATE)
+FROM products;
+
+--Соединение таблиц через FROM и WHERE
+SELECT products.title, categories.name
+FROM products, categories
+WHERE products.categories_category_id = categories.category_id;
+
+--соединение таблиц INNER JOIN
+SELECT products.title, categories.name, provinces.name
+FROM products
+INNER JOIN categories
+ON products.categories_category_id = categories.category_id
+INNER JOIN provinces
+ON products.provinces_province_id = provinces.province_id;
+
+--Соединение таблиц FULL JOIN
+SELECT
+    categories.category_id,
+    categories.name,
+    products.product_id,
+    products.title
+FROM categories
+FULL JOIN products
+ON categories.category_id = products.categories_category_id;
+
+--Найти категории, у которых нет товаров
+SELECT categories.name, products.product_id
+FROM categories
+LEFT JOIN products
+ON categories.category_id = products.categories_category_id
+WHERE products.product_id IS NULL;
+
+--Соединение таблиц RIGHT JOIN
+SELECT categories.name, products.product_id, products.title
+FROM products
+RIGHT JOIN categories
+ON products.categories_category_id = categories.category_id;
+
+--Сравнение с помощью знаков больше и меньше
+SELECT title, price
+FROM products
+WHERE price > 1000
+AND price < 2000
+AND provinces_province_id IS NOT NULL
+ORDER BY price;
+
+--Использование операторов AND и OR
+SELECT title, price, categories_category_id
+FROM products
+WHERE (categories_category_id = 1 AND price != 0)
+OR (categories_category_id = 2 AND price = 1750);
+
+--Использование BETWEEN
+SELECT title, price
+FROM products
+WHERE price BETWEEN 900 AND 1800;
+
+--Использование NOT BETWEEN, IN, NOT IN
+SELECT title, price, categories_category_id, suppliers_supplier_id
+FROM products
+WHERE price NOT BETWEEN 900 AND 1600
+OR (categories_category_id IN (1, 2)
+AND suppliers_supplier_id NOT IN (3, 4));
+
+--Поиск по шаблону LIKE и сортировка
+SELECT title, price
+FROM products
+WHERE title LIKE '%Пуэр%'
+ORDER BY price DESC;
