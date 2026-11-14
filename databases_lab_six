@@ -1,0 +1,222 @@
+--------------------------------------------------ЛАБОРАТОРНАЯ РАБОТА №1--------------------------------------------------------
+
+-----ЭТАП 1. СОЗДАНИЕ ОСНОВНЫХ ТАБЛИЦ-----
+
+-- Таблица категорий чая
+CREATE TABLE categories (
+    category_id SERIAL PRIMARY KEY,
+    name VARCHAR(45) NOT NULL
+);
+
+-- Таблица регионов производства
+CREATE TABLE provinces (
+    province_id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT
+);
+
+-- Таблица поставщиков
+CREATE TABLE suppliers (
+    supplier_id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    contact_info VARCHAR(150)
+);
+
+-- Таблица товаров
+CREATE TABLE products (
+    product_id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    harvest_year INT,
+    categories_category_id INT,
+    provinces_province_id INT,
+    suppliers_supplier_id INT,
+    FOREIGN KEY (categories_category_id)
+        REFERENCES categories(category_id),
+    FOREIGN KEY (provinces_province_id)
+        REFERENCES provinces(province_id),
+    FOREIGN KEY (suppliers_supplier_id)
+        REFERENCES suppliers(supplier_id)
+);
+
+-- Таблица покупателей
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20)
+);
+
+-- Таблица способов доставки
+CREATE TABLE deliveries (
+    delivery_id SERIAL PRIMARY KEY,
+    method_name VARCHAR(100) NOT NULL,
+    cost DECIMAL(10,2) NOT NULL
+);
+
+-- Таблица заказов
+CREATE TABLE orders (
+    order_id SERIAL PRIMARY KEY,
+    order_date VARCHAR(45) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    users_user_id INT,
+    deliveries_delivery_id INT,
+    FOREIGN KEY (users_user_id)
+        REFERENCES users(user_id),
+    FOREIGN KEY (deliveries_delivery_id)
+        REFERENCES deliveries(delivery_id)
+);
+
+-- Таблица состава заказов
+CREATE TABLE order_items (
+    order_item_id SERIAL PRIMARY KEY,
+    quantity INT NOT NULL,
+    orders_order_id INT,
+    products_product_id INT,
+    FOREIGN KEY (orders_order_id)
+        REFERENCES orders(order_id),
+    FOREIGN KEY (products_product_id)
+        REFERENCES products(product_id)
+);
+
+-- Таблица складских остатков
+CREATE TABLE warehouse (
+    stock_id SERIAL PRIMARY KEY,
+    quantity_gram INT NOT NULL,
+    shelf_location VARCHAR(45),
+    products_product_id INT,
+    FOREIGN KEY (products_product_id)
+        REFERENCES products(product_id)
+);
+
+
+-----ЭТАП 2. ДОБАВЛЕНИЕ ДАННЫХ В ОСНОВНЫЕ ТАБЛИЦЫ-----
+
+INSERT INTO categories (name) VALUES
+('Улун'),
+('Шу Пуэр'),
+('Белый чай');
+
+INSERT INTO provinces (name, description) VALUES
+('Фуцзянь', 'Родина знаменитых улунов и белого чая'),
+('Юньнань', 'Исторический регион производства пуэров');
+
+INSERT INTO suppliers (name, contact_info) VALUES
+('ChinaTea Co.', 'contact@chinatea.com'),
+('Yunnan Leaf', 'info@yunnanleaf.cn');
+
+INSERT INTO users (username, email, phone) VALUES
+('Даниил', 'forkkinston@mail.com', '+79001234567'),
+('Иван Иванов', 'ivan@gmail.com', '+79009876543');
+
+INSERT INTO deliveries (method_name, cost) VALUES
+('СДЭК', 300.00),
+('Почта России', 250.00);
+
+INSERT INTO products
+(title, price, harvest_year, categories_category_id,
+ provinces_province_id, suppliers_supplier_id)
+VALUES
+-- Улуны
+('Да Хун Пао', 1250.00, 2023, 1, 1, 1),
+('Молочный улун', 1600.00, 2024, 1, 1, 2),
+('Шуй Сянь', 950.00, 2021, 1, 1, 1),
+
+-- Шу Пуэры
+('Шу Пуэр Лао Ча Тоу', 1800.00, 2022, 2, 2, 1),
+('Шу Пуэр Менхай', 2400.00, 2023, 2, 2, 2),
+('Шу Пуэр Гун Тин', 1350.00, 2024, 2, 2, 1),
+
+-- Белые чаи
+('Бай Хао Инь Чжэнь', 2200.00, 2023, 3, 1, 2),
+('Бай Му Дань', 1300.00, 2024, 3, 1, 2),
+('Шоу Мэй', 850.00, 2021, 3, 1, 1);
+
+
+
+-----ЭТАП 3. ПРОСМОТР ДАННЫХ-----
+
+SELECT * FROM categories;
+SELECT * FROM provinces;
+SELECT * FROM suppliers;
+SELECT * FROM users;
+SELECT * FROM deliveries;
+SELECT * FROM products;
+
+-------------------------------------------------------6 ЛАБА------------------------------------------------------------
+
+--Подсчитать количество товаров в каждой категории
+SELECT categories.name, COUNT(*)
+FROM categories
+INNER JOIN products
+ON products.categories_category_id = categories.category_id
+GROUP BY categories.name;
+
+--Найти среднюю цену товаров в каждой категории
+SELECT categories.name, AVG(products.price)
+FROM categories
+INNER JOIN products
+ON products.categories_category_id = categories.category_id
+GROUP BY categories.name;
+
+--Найти минимальную и максимальную цену товаров по регионам
+SELECT provinces.name, MIN(products.price), MAX(products.price)
+FROM provinces
+INNER JOIN products
+ON products.provinces_province_id = provinces.province_id
+GROUP BY provinces.name;
+
+--Подсчитать количество товаров у каждого поставщика
+SELECT suppliers.name, COUNT(*)
+FROM suppliers
+INNER JOIN products
+ON products.suppliers_supplier_id = suppliers.supplier_id
+GROUP BY suppliers.name;
+
+--Найти суммарную стоимость товаров каждой категории
+SELECT categories.name, SUM(products.price)
+FROM categories
+INNER JOIN products
+ON products.categories_category_id = categories.category_id
+GROUP BY categories.name;
+
+--Найти среднюю цену товаров по категориям, собранных с 2022 года
+SELECT categories.name, AVG(products.price)
+FROM categories
+INNER JOIN products
+ON products.categories_category_id = categories.category_id
+WHERE products.harvest_year >= 2022
+GROUP BY categories.name;
+
+--Подсчитать количество и сумму цен товаров дороже 1000 рублей в каждой категории
+SELECT categories.name, COUNT(*), SUM(products.price)
+FROM categories
+INNER JOIN products
+ON products.categories_category_id = categories.category_id
+WHERE products.price > 1000
+GROUP BY categories.name;
+
+--Подсчитать количество товаров и среднюю цену для каждого года сбора, отсортировав по году
+SELECT products.harvest_year, COUNT(*), AVG(products.price)
+FROM products
+WHERE products.harvest_year IS NOT NULL
+GROUP BY products.harvest_year
+ORDER BY products.harvest_year DESC;
+
+--Найти категории, в которых не менее двух товаров
+SELECT categories.name, COUNT(*)
+FROM categories
+INNER JOIN products
+ON products.categories_category_id = categories.category_id
+GROUP BY categories.name
+HAVING COUNT(*) >= 2;
+
+--Найти поставщиков со средней ценой товаров выше 1000 рублей среди товаров, собранных с 2022 года
+SELECT suppliers.name, AVG(products.price)
+FROM suppliers
+INNER JOIN products
+ON products.suppliers_supplier_id = suppliers.supplier_id
+WHERE products.harvest_year >= 2022
+GROUP BY suppliers.name
+HAVING AVG(products.price) > 1000
+ORDER BY AVG(products.price) DESC;
