@@ -1,0 +1,315 @@
+--------------------------------------------------ЛАБОРАТОРНАЯ РАБОТА №1--------------------------------------------------------
+
+-----ЭТАП 1. СОЗДАНИЕ ОСНОВНЫХ ТАБЛИЦ-----
+
+-- Таблица категорий чая
+CREATE TABLE categories (
+    category_id SERIAL PRIMARY KEY,
+    name VARCHAR(45) NOT NULL
+);
+
+-- Таблица регионов производства
+CREATE TABLE provinces (
+    province_id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT
+);
+
+-- Таблица поставщиков
+CREATE TABLE suppliers (
+    supplier_id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    contact_info VARCHAR(150)
+);
+
+-- Таблица товаров
+CREATE TABLE products (
+    product_id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    harvest_year INT,
+    categories_category_id INT,
+    provinces_province_id INT,
+    suppliers_supplier_id INT,
+    FOREIGN KEY (categories_category_id)
+        REFERENCES categories(category_id),
+    FOREIGN KEY (provinces_province_id)
+        REFERENCES provinces(province_id),
+    FOREIGN KEY (suppliers_supplier_id)
+        REFERENCES suppliers(supplier_id)
+);
+
+-- Таблица покупателей
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20)
+);
+
+-- Таблица способов доставки
+CREATE TABLE deliveries (
+    delivery_id SERIAL PRIMARY KEY,
+    method_name VARCHAR(100) NOT NULL,
+    cost DECIMAL(10,2) NOT NULL
+);
+
+-- Таблица заказов
+CREATE TABLE orders (
+    order_id SERIAL PRIMARY KEY,
+    order_date VARCHAR(45) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    users_user_id INT,
+    deliveries_delivery_id INT,
+    FOREIGN KEY (users_user_id)
+        REFERENCES users(user_id),
+    FOREIGN KEY (deliveries_delivery_id)
+        REFERENCES deliveries(delivery_id)
+);
+
+-- Таблица состава заказов
+CREATE TABLE order_items (
+    order_item_id SERIAL PRIMARY KEY,
+    quantity INT NOT NULL,
+    orders_order_id INT,
+    products_product_id INT,
+    FOREIGN KEY (orders_order_id)
+        REFERENCES orders(order_id),
+    FOREIGN KEY (products_product_id)
+        REFERENCES products(product_id)
+);
+
+-- Таблица складских остатков
+CREATE TABLE warehouse (
+    stock_id SERIAL PRIMARY KEY,
+    quantity_gram INT NOT NULL,
+    shelf_location VARCHAR(45),
+    products_product_id INT,
+    FOREIGN KEY (products_product_id)
+        REFERENCES products(product_id)
+);
+
+
+-----ЭТАП 2. ДОБАВЛЕНИЕ ДАННЫХ В ОСНОВНЫЕ ТАБЛИЦЫ-----
+
+INSERT INTO categories (name) VALUES
+('Улун'),
+('Шу Пуэр'),
+('Белый чай');
+
+INSERT INTO provinces (name, description) VALUES
+('Фуцзянь', 'Родина знаменитых улунов и белого чая'),
+('Юньнань', 'Исторический регион производства пуэров');
+
+INSERT INTO suppliers (name, contact_info) VALUES
+('ChinaTea Co.', 'contact@chinatea.com'),
+('Yunnan Leaf', 'info@yunnanleaf.cn');
+
+INSERT INTO users (username, email, phone) VALUES
+('Даниил', 'forkkinston@mail.com', '+79001234567'),
+('Иван Иванов', 'ivan@gmail.com', '+79009876543');
+
+INSERT INTO deliveries (method_name, cost) VALUES
+('СДЭК', 300.00),
+('Почта России', 250.00);
+
+INSERT INTO products
+(title, price, harvest_year, categories_category_id,
+ provinces_province_id, suppliers_supplier_id)
+VALUES
+-- Улуны
+('Да Хун Пао', 1250.00, 2023, 1, 1, 1),
+('Молочный улун', 1600.00, 2024, 1, 1, 2),
+('Шуй Сянь', 950.00, 2021, 1, 1, 1),
+
+-- Шу Пуэры
+('Шу Пуэр Лао Ча Тоу', 1800.00, 2022, 2, 2, 1),
+('Шу Пуэр Менхай', 2400.00, 2023, 2, 2, 2),
+('Шу Пуэр Гун Тин', 1350.00, 2024, 2, 2, 1),
+
+-- Белые чаи
+('Бай Хао Инь Чжэнь', 2200.00, 2023, 3, 1, 2),
+('Бай Му Дань', 1300.00, 2024, 3, 1, 2),
+('Шоу Мэй', 850.00, 2021, 3, 1, 1);
+
+
+
+-----ЭТАП 3. ПРОСМОТР ДАННЫХ-----
+
+SELECT * FROM categories;
+SELECT * FROM provinces;
+SELECT * FROM suppliers;
+SELECT * FROM users;
+SELECT * FROM deliveries;
+SELECT * FROM products;
+
+-------------------------------------------------------6 ЛАБА------------------------------------------------------------
+
+--Поиск товара с максимальной ценой
+SELECT products.title, products.price
+FROM products
+WHERE products.price = (
+    SELECT MAX(products.price)
+    FROM products
+);
+
+--Поиск товара с минимальной ценой
+SELECT products.title, products.price
+FROM products
+WHERE products.price = (
+    SELECT MIN(products.price)
+    FROM products
+);
+
+--Количество товаров в каждой категории 
+SELECT categories.name,
+       (
+           SELECT COUNT(*)
+           FROM products
+           WHERE products.categories_category_id = categories.category_id
+       )
+FROM categories;
+
+--Товары дороже средней цены, рассчитаной через и count
+SELECT products.title, products.price
+FROM products
+WHERE products.price > (
+    SELECT SUM(products.price) / COUNT(*)
+    FROM products
+);
+
+--Категории со средней ценой, выше средней цены магазина
+SELECT categories.name, ROUND(AVG(products.price), 2)
+FROM categories
+INNER JOIN products
+ON products.categories_category_id = categories.category_id
+GROUP BY categories.name
+HAVING AVG(products.price) > (
+    SELECT ROUND(AVG(products.price), 2) 
+    FROM products
+);
+
+--Товары из провинции Юнань (IN)
+SELECT products.title, products.price
+FROM products
+WHERE products.provinces_province_id IN (
+    SELECT provinces.province_id
+    FROM provinces
+    WHERE provinces.name = 'Юньнань'
+);
+
+--Поставщики, у которых пока нет товаров (NOT IN)
+SELECT suppliers.name
+FROM suppliers
+WHERE suppliers.supplier_id NOT IN (
+    SELECT products.suppliers_supplier_id
+    FROM products
+    WHERE products.suppliers_supplier_id IS NOT NULL
+);
+
+
+--Товары дороже хотя бы одного улуна (ANY)
+SELECT products.title, products.price
+FROM products
+WHERE products.price > ANY (
+    SELECT products.price
+    FROM products
+    INNER JOIN categories
+    ON products.categories_category_id = categories.category_id
+    WHERE categories.name = 'Улун'
+);
+
+--Товары дешевле хотя бы одного белого чая (SOME)
+SELECT products.title, products.price
+FROM products
+WHERE products.price < SOME (
+    SELECT products.price
+    FROM products
+    INNER JOIN categories
+    ON products.categories_category_id = categories.category_id
+    WHERE categories.name = 'Белый чай'
+);
+
+--Самые дорогие товары, связанные с поставщиком и отсутствующие на складе (ALL, EXISTS, NOT EXISTS)
+SELECT products.title, products.price
+FROM products
+WHERE products.price >= ALL (
+    SELECT products2.price
+    FROM products products2
+)
+AND EXISTS (
+    SELECT 1
+    FROM suppliers
+    WHERE suppliers.supplier_id = products.suppliers_supplier_id
+)
+AND NOT EXISTS (
+    SELECT 1
+    FROM warehouse
+    WHERE warehouse.products_product_id = products.product_id
+);
+
+--Объединение товаров по цене или году сбора (UNION)
+SELECT products.title
+FROM products
+WHERE products.price >= 1500
+UNION
+SELECT products.title
+FROM products
+WHERE products.harvest_year >= 2024
+ORDER BY title;
+
+--Объединение товаров двух категорий с сохранением повторов (UNION ALL)
+SELECT products.title
+FROM products
+INNER JOIN categories
+ON products.categories_category_id = categories.category_id
+WHERE categories.name = 'Улун'
+UNION ALL
+SELECT products.title
+FROM products
+INNER JOIN categories
+ON products.categories_category_id = categories.category_id
+WHERE categories.name = 'Белый чай'
+ORDER BY title;
+
+--Товары из Юньнани дороже 1000 (INTERSECT)
+SELECT products.title
+FROM products
+WHERE products.provinces_province_id IN (
+    SELECT provinces.province_id
+    FROM provinces
+    WHERE provinces.name = 'Юньнань'
+)
+INTERSECT
+SELECT products.title
+FROM products
+WHERE products.price > 1000
+ORDER BY title;
+
+--Товары категории «Шу Пуэр» стоимостью не ниже 1500 (EXCEPT)
+SELECT products.title
+FROM products
+WHERE products.categories_category_id IN (
+    SELECT categories.category_id
+    FROM categories
+    WHERE categories.name = 'Шу Пуэр'
+)
+EXCEPT
+SELECT products.title
+FROM products
+WHERE products.price < 1500
+ORDER BY title;
+
+--Категории, в которых есть дорогие или недавно собранные товары (UNION)
+SELECT categories.name
+FROM categories
+INNER JOIN products
+ON products.categories_category_id = categories.category_id
+WHERE products.price > 1500
+UNION
+SELECT categories.name
+FROM categories
+INNER JOIN products
+ON products.categories_category_id = categories.category_id
+WHERE products.harvest_year >= 2024
+ORDER BY name;
