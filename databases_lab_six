@@ -153,7 +153,7 @@ ON products.categories_category_id = categories.category_id
 GROUP BY categories.name;
 
 --Найти среднюю цену товаров в каждой категории
-SELECT categories.name, AVG(products.price)
+SELECT categories.name, ROUND(AVG(products.price), 2)
 FROM categories
 INNER JOIN products
 ON products.categories_category_id = categories.category_id
@@ -181,7 +181,7 @@ ON products.categories_category_id = categories.category_id
 GROUP BY categories.name;
 
 --Найти среднюю цену товаров по категориям, собранных с 2022 года
-SELECT categories.name, AVG(products.price)
+SELECT categories.name, ROUND(AVG(products.price), 2)
 FROM categories
 INNER JOIN products
 ON products.categories_category_id = categories.category_id
@@ -197,7 +197,7 @@ WHERE products.price > 1000
 GROUP BY categories.name;
 
 --Подсчитать количество товаров и среднюю цену для каждого года сбора, отсортировав по году
-SELECT products.harvest_year, COUNT(*), AVG(products.price)
+SELECT products.harvest_year, COUNT(*), ROUND(AVG(products.price), 2)
 FROM products
 WHERE products.harvest_year IS NOT NULL
 GROUP BY products.harvest_year
@@ -212,7 +212,7 @@ GROUP BY categories.name
 HAVING COUNT(*) >= 2;
 
 --Найти поставщиков со средней ценой товаров выше 1000 рублей среди товаров, собранных с 2022 года
-SELECT suppliers.name, AVG(products.price)
+SELECT suppliers.name, ROUND(AVG(products.price), 2)
 FROM suppliers
 INNER JOIN products
 ON products.suppliers_supplier_id = suppliers.supplier_id
